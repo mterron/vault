@@ -1,0 +1,14 @@
+{
+  "programs": {
+    "consul": {
+      "args": [
+        "/bin/start_consul.sh"
+      ]
+    },
+    "vault": {
+      "args": [
+        "/bin/start_vault.sh"
+      ]
+    }
+  }
+}

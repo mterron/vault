@@ -1,0 +1,18 @@
+# Use your own TZ
+TZ=Pacific/Auckland
+
+# Consul
+CONSUL_HTTP_ADDR=unix:///consul/consul.http.socket
+CONSUL_DC_NAME=demodc
+CONSUL_DNS_NAME=consul.service.consul
+# Generate your own encryption token!!!!
+CONSUL_ENCRYPT_TOKEN=ISm6AS2DDICjkMdzqjZDPw==
+# Generate your own Consul master token!!!!
+CONSUL_ACL_MASTER_TOKEN=c16d0b3d-60aa-4580-b0e7-5f3a3fe8443c
+CONSUL_CLUSTER_SIZE=3
+#CONSUL_BOOTSTRAP_HOST=
+
+# Vault
+VAULT_ADDR=https://active.vault.service.consul:8200
+#VAULT_CONSUL_TOKEN=
+#VAULT_CONSUL_PATH=

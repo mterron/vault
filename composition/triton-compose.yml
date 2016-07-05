@@ -1,0 +1,25 @@
+version: "2"
+services:
+  vault:
+    image: mterron/vault-autopilot
+    labels:
+        - triton.cns.services=vault
+    restart: always
+    mem_limit: 128m
+    ulimits:
+        memlock: 9223372036854775807
+    network_mode: bridge
+    ports:
+        - 53
+        - 8200
+        - 8300
+        - 8301
+        - 8302
+        - 8501
+    dns:
+        - 172.19.0.2
+    dns_search:
+      - service.consul
+    env_file: _env
+    environment:
+        - BOOTSTRAP_HOST
