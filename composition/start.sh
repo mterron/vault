@@ -60,7 +60,8 @@ done
 printf "%s\n" 'The bootstrap instance is now running'
 printf "%s\n" "Dashboard: https://$BOOTSTRAP_UI:$BOOTSTRAP_UI_PORT/ui/"
 # Open browser pointing to the Consul UI
-command -v open >/dev/null 2>&1 && open https://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_UI_PORT"/ui/
+command -v open >/dev/null 2>&1 && open https://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_UI_PORT"/ui/ >/dev/null 2>&1
+command -v open >/dev/null 2>&1 && xdg-open https://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_UI_PORT"/ui/ >/dev/null 2>&1
 
 # Scale up the cluster
 printf "%s\n" 'Scaling the Consul raft to three nodes'
@@ -76,4 +77,3 @@ docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=2 vault unseal_vault.sh
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=3 vault unseal_vault.sh
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault auth'
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault audit-enable file file_path=/consul/vault_audit.log'
-docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault auth-enable ldap'
