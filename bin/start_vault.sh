@@ -38,5 +38,9 @@ sed -i "$REPLACEMENT_CONSUL_TOKEN" /etc/vault/config.hcl
 REPLACEMENT_CONSUL_DATACENTER="s/#*datacenter = .*/datacenter = \"${CONSUL_DC_NAME}\"/"
 sed -i "$REPLACEMENT_CONSUL_DATACENTER" /etc/vault/config.hcl
 
+
+# Allow service discovery without a token
+consul-cli --token="$(awk -F\" '/acl_master_token/{print $4}' /consul/config/consul.json)" --consul="$CONSUL_HTTP_ADDR" acl update --rule='service::read' anonymous
+
 log 'Starting Vault'
 exec vault server -config=/etc/vault/config.hcl -log-level=warn
