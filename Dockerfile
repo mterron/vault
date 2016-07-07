@@ -16,7 +16,7 @@ ADD https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}
 # Download Vault integrity file
 ADD https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS /
 # Download Consul CLI tool
-ENV CONSULCLI_VERSION=0.3.0
+ENV CONSULCLI_VERSION=0.3.1
 ADD https://github.com/CiscoCloud/consul-cli/releases/download/v${CONSULCLI_VERSION}/consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz /
 USER root
 # Copy binaries. bin directory contains start_vault.sh vault-health.sh
@@ -44,7 +44,7 @@ ONBUILD COPY consul.json /consul/config/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
 
-VOLUME ["/etc/vault/"]
-
+VOLUME ["/etc/vault"]
+VOLUME ["/consul"]
 USER vault
 CMD ["/bin/bifurcate","/etc/bifurcate/bifurcate.json"]

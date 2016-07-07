@@ -12,6 +12,7 @@ services:
         memlock: 9223372036854775807
     ports:
         - 53
+        - "53/udp"
         - 8200
         - 8501
     expose:

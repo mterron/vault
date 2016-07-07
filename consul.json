@@ -4,7 +4,6 @@
 "disable_update_check": true,
 "disable_remote_exec": true,
 "log_level": "err",
-
 "skip_leave_on_interrupt": true,
 
 "cert_file": "/etc/tls/consul.service.consul.pem",
