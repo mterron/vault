@@ -2,7 +2,7 @@
 TZ=Pacific/Auckland
 
 # Consul
-CONSUL_HTTP_ADDR=unix:///consul/consul.http.socket
+CONSUL_HTTP_ADDR=unix:///data/consul.http.socket
 CONSUL_DC_NAME=demodc
 CONSUL_DNS_NAME=consul.service.consul
 # Generate your own encryption token!!!!

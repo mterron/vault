@@ -4,7 +4,7 @@ disable_mlock = false
 #max_lease_ttl = "30d"
 
 backend "consul" {
-	address = "unix:///consul/consul.http.socket"
+	address = "unix:///data/consul.http.socket"
 	path = "vault/"
 	#datacenter = ""
 	#token = ""

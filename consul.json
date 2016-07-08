@@ -1,5 +1,5 @@
 {
-"data_dir": "/consul/data",
+"data_dir": "/data",
 
 "disable_update_check": true,
 "disable_remote_exec": true,
@@ -18,7 +18,7 @@
 "acl_master_token": "",
 
 "addresses": {
-	"http":	 "unix:///consul/consul.http.socket",
+	"http":	 "unix:///data/consul.http.socket",
 	"https": "0.0.0.0",
 	"dns":	 "0.0.0.0"
 },

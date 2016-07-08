@@ -2,3 +2,5 @@
 *.tar.gz
 .DS_Store
 bin/vault
+restart.sh
+stop.sh

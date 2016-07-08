@@ -76,4 +76,4 @@ docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault unseal_vault.sh
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=2 vault unseal_vault.sh
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=3 vault unseal_vault.sh
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault auth'
-docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault audit-enable file file_path=/consul/vault_audit.log'
+docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault audit-enable file file_path=/data/vault_audit.log'

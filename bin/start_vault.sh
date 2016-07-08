@@ -22,7 +22,7 @@ done
 
 
 # Acquire Consul master token
-CONSUL_TOKEN=$(awk -F\" '/acl_master_token/{print $4}' /consul/config/consul.json)
+CONSUL_TOKEN=$(awk -F\" '/acl_master_token/{print $4}' /etc/consul/consul.json)
 # Get Vault service name from the config file. If empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
 VAULT_SERVICE_NAME=$(awk -F\" '/service =/{print $2}' /etc/vault/config.hcl | tr -d " /\"")
