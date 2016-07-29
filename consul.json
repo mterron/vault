@@ -20,7 +20,8 @@
 "addresses": {
 	"http":	 "unix:///data/consul.http.socket",
 	"https": "0.0.0.0",
-	"dns":	 "0.0.0.0"
+	"dns":	 "0.0.0.0",
+	"rpc":   "0.0.0.0"
 },
 "ports": {
 	"dns": 53,

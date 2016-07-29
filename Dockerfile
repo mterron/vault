@@ -7,25 +7,25 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 # for purposes of linking.
 EXPOSE 8200
 
-# Download Bifurcate
 ENV BIFURCATE_VERSION=0.4.0
-ADD https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz /
-# Download Vault binary & integrity file
 ENV VAULT_VERSION=0.6.0
-ADD https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip /
-ADD https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS /
-# Download Consul CLI tool
 ENV CONSULCLI_VERSION=0.3.1
-ADD https://github.com/CiscoCloud/consul-cli/releases/download/v${CONSULCLI_VERSION}/consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz /
 
-USER root
 # Copy binaries. bin directory contains start_vault.sh vault-health.sh
 COPY bin/ /bin
 # Copy /etc (Vault config, Bifurcate config)
 COPY etc/ /etc
 
+USER root
+# Download Bifurcate
+RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+# Download Vault binary & integrity file
+	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
+	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
+# Download Consul CLI tool
+	wget https://github.com/CiscoCloud/consul-cli/releases/download/v${CONSULCLI_VERSION}/consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
 # Install Vault & Bifurcate
-RUN grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
+    grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
     unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin &&\
     tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
     tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
