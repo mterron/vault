@@ -28,7 +28,8 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
-	tar xz -T consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli -f consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
+	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
+    mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
 # Create Vault user
 	/bin/busybox.static adduser -h /tmp -H -g 'Vault user'  -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/bifurcate &&\
@@ -37,7 +38,7 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	chmod 660 /etc/consul/consul.json &&\
 	chmod 660 /etc/vault/config.hcl &&\
 # Cleanup
-	rm -f vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz
+	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY config.hcl /etc/vault/
