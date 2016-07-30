@@ -28,7 +28,7 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
-	tar xz --strip-components 1 -f consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
+	tar xz -T consul-cli -f consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
 # Create Vault user
 	/bin/busybox.static adduser -h /tmp -H -g 'Vault user'  -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/bifurcate &&\
