@@ -54,7 +54,7 @@ printf "%s\n" " [DEBUG] CONSUL_BOOTSTRAP_HOST is ${CONSUL_BOOTSTRAP_HOST}"
 printf '>Waiting for the bootstrap instance...'
 until curl -fs --connect-timeout 1 http://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_UI_PORT"/ui &> /dev/null; do
     printf '.'
-    sleep .2
+    sleep .5
 done
 
 printf "%s\n" 'The bootstrap instance is now running'
