@@ -7,7 +7,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 # for purposes of linking.
 EXPOSE 8200
 
-ENV BIFURCATE_VERSION=0.4.0 \
+ENV BIFURCATE_VERSION=0.5.0 \
 	VAULT_VERSION=0.6.2 \
 	CONSULCLI_VERSION=0.3.1
 
@@ -37,6 +37,8 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	chown -R vault: /etc/consul &&\
 	chmod 660 /etc/consul/consul.json &&\
 	chmod 660 /etc/vault/config.hcl &&\
+# Fix Consul startup script
+	 sed -i 's/\/bin\/dumb-init //' /bin/start_consul.sh &&\
 # Cleanup
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
 
