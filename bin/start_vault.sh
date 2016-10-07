@@ -13,10 +13,10 @@ if [ ! -e /etc/ssl/certs/ca-consul.done ]; then {
 }
 fi
 
-# Wait for Consul to be available 
+# Wait for Consul to be available
 log 'Waiting for Consul instance...'
-until (consul members >/dev/null 2>&1); do
-	sleep 10s
+until (consul info | grep leader_addr | grep '\d' >/dev/null 2>&1); do
+	sleep 5s
 done
 #log 'Consul is ready!'
 
@@ -32,9 +32,9 @@ VAULT_PATH=$(awk -F= '/path =/{print $2}' /etc/vault/config.hcl  | tr -d " /\"")
 # Remove old Vault service registrations
 consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services | awk '/ID/{print $2}' | grep -v consul | grep -v "$(hostname -i)"|tr -d ",\""|busybox.static xargs -r -n 1 -I SERVICEID consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" service deregister SERVICEID
 
-# If VAULT_CONSUL_TOKEN environment variable is not set and there's no token on 
-# the Vault configuration file, create an ACL in Consul with access to Vault's 
-# "path" on the K/V store and the "vault" service key and acquire a token 
+# If VAULT_CONSUL_TOKEN environment variable is not set and there's no token on
+# the Vault configuration file, create an ACL in Consul with access to Vault's
+# "path" on the K/V store and the "vault" service key and acquire a token
 # associated with that ACL. Else use the environment variable if it exists or
 # the existing token (from the config file)
 if [ -z "${VAULT_CONSUL_TOKEN:-$(awk -F\" '/token/{print $2}' /etc/vault/config.hcl)}" ]; then
@@ -55,4 +55,4 @@ sed -i "$REPLACEMENT_CONSUL_DATACENTER" /etc/vault/config.hcl
 consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl update --rule='service::read' anonymous
 
 log 'Starting Vault'
-exec vault server -config=/etc/vault/config.hcl -log-level=warn
+exec /bin/vault server -config=/etc/vault/config.hcl -log-level=warn
