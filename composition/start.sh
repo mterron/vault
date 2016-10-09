@@ -63,13 +63,14 @@ command -v open >/dev/null 2>&1 && open https://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_U
 # Scale up the cluster
 printf "%s\n" "Scaling the Consul raft to ${CONSUL_CLUSTER_SIZE} nodes"
 docker-compose -p "$COMPOSE_PROJECT_NAME" scale vault=$CONSUL_CLUSTER_SIZE
-printf '>Waiting for Consul cluster quorum acquisition and stabilisation'
 
+printf '>Waiting for Consul cluster quorum acquisition and stabilisation'
 until docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault /bin/ash -c 'consul info | grep leader_addr | grep "\d"'; do
 	printf '.'
 	sleep .2
 done
 sleep 5
+
 printf "%s\n" 'Initialising Vault'
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault init -key-shares=1 -key-threshold=1'
 for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
@@ -82,4 +83,4 @@ export VAULT_CACERT=../tls/vault.service.consul.pem
 vault auth
 vault audit-enable file file_path=/data/vault_audit.log
 vault mount transit
-printf "Remember to delete the consul token from your home directory!"
+printf "\e[1;91;5mRemember to delete the consul token from your home directory!\e[0m\n"

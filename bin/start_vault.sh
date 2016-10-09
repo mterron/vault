@@ -55,4 +55,4 @@ sed -i "$REPLACEMENT_CONSUL_DATACENTER" /etc/vault/config.hcl
 consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl update --rule='service::read' anonymous
 
 log 'Starting Vault'
-exec /bin/vault server -config=/etc/vault/config.hcl -log-level=warn
+exec vault server -config=/etc/vault/config.hcl -log-level=warn
