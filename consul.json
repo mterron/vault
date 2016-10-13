@@ -28,7 +28,7 @@
 	"https": 8501
 },
 "unix_sockets": {
-	"user": "1001",
+	"user": "1000",
 	"group": "1000",
 	"mode": "770"
 },
