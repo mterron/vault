@@ -30,7 +30,7 @@ VAULT_SERVICE_NAME=$(awk -F\" '/service =/{print $2}' /etc/vault/config.hcl | tr
 VAULT_PATH=$(awk -F= '/path =/{print $2}' /etc/vault/config.hcl  | tr -d " /\"")
 
 # Remove old Vault service registrations
-consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services | awk '/ID/{print $2}' | grep -v consul | grep -v "$(hostname -i)"|tr -d ",\""|busybox.static xargs -r -n 1 -I SERVICEID consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" service deregister SERVICEID
+consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services | awk '/ID/{print $2}' | grep -v consul | grep -v "$(hostname -i)"|tr -d ",\""|xargs -r -n 1 -I SERVICEID consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" service deregister SERVICEID
 
 # If VAULT_CONSUL_TOKEN environment variable is not set and there's no token on
 # the Vault configuration file, create an ACL in Consul with access to Vault's
