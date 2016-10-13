@@ -5,7 +5,7 @@ networks:
       name: vault
 services:
   vault:
-    image: mterron/vault-betterscratch
+    image: mterron/vault
     restart: always
     mem_limit: 128m
     ulimits:

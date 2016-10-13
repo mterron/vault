@@ -1,4 +1,4 @@
-FROM mterron/consul-betterscratch
+FROM mterron/consul
 MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 
 # We don't need to expose these ports in order for other containers on Triton
@@ -31,7 +31,7 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
     mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
 # Create Vault user
-	/bin/busybox.static adduser -h /tmp -H -g 'Vault user'  -s /dev/null -D -G consul vault &&\
+	adduser -h /tmp -H -g 'Vault user'  -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/bifurcate &&\
 	chown -R vault: /etc/vault &&\
 	chown -R vault: /etc/consul &&\
