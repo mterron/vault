@@ -50,5 +50,5 @@ ONBUILD COPY client_certificate.* /etc/tls/
 # avoid filesystem performance issues with Docker image layers
 #VOLUME ["/data"]
 
-USER vault
+#USER vault
 CMD ["/bin/bifurcate","/etc/bifurcate/bifurcate.json"]
