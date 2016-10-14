@@ -18,7 +18,7 @@ COPY etc/ /etc
 
 USER root
 # Download Bifurcate
-RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+RUN	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
 	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
@@ -29,7 +29,7 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
-    mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
+	mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
 # Create Vault user
 	adduser -g 'Vault user' -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/vault &&\
@@ -47,4 +47,4 @@ ONBUILD COPY client_certificate.* /etc/tls/
 # avoid filesystem performance issues with Docker image layers
 #VOLUME ["/data"]
 
-CMD ["/bin/bifurcate","/etc/bifurcate/bifurcate.json"]
+CMD ["bifurcate","/etc/bifurcate/bifurcate.json"]
