@@ -31,11 +31,8 @@ RUN wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
     mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
 # Create Vault user
-	adduser -h /tmp -H -g 'Vault user'  -s /dev/null -D -G consul vault &&\
-	chown -R vault: /etc/bifurcate &&\
+	adduser -g 'Vault user' -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/vault &&\
-	chown -R vault: /etc/consul &&\
-	chmod 660 /etc/consul/consul.json &&\
 	chmod 660 /etc/vault/config.hcl &&\
 # Cleanup
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
@@ -50,5 +47,4 @@ ONBUILD COPY client_certificate.* /etc/tls/
 # avoid filesystem performance issues with Docker image layers
 #VOLUME ["/data"]
 
-#USER vault
 CMD ["/bin/bifurcate","/etc/bifurcate/bifurcate.json"]

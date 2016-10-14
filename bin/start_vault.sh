@@ -18,7 +18,7 @@ log 'Waiting for Consul instance...'
 until (consul info | grep leader_addr | grep '\d' >/dev/null 2>&1); do
 	sleep 5s
 done
-#log 'Consul is ready!'
+log 'Consul is ready!'
 
 
 # Acquire Consul master token
