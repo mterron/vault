@@ -22,8 +22,6 @@ export COMPOSE_HTTP_TIMEOUT=300
 printf "%s\n" 'Starting a Consul service'
 printf "%s\n" '>Pulling the most recent images'
 #docker-compose pull
-# Set initial bootstrap host to localhost
-export CONSUL_BOOTSTRAP_HOST=127.0.0.1
 printf "%s\n" '>Starting initial container'
 docker-compose up -d --remove-orphans
 
@@ -31,26 +29,20 @@ CONSUL_BOOTSTRAP_HOST="${COMPOSE_PROJECT_NAME}_vault_1"
 printf "%s\n" "CONSUL_BOOTSTRAP_HOST is $CONSUL_BOOTSTRAP_HOST"
 
 # Default for production
-#BOOTSTRAP_UI_IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $CONSUL_BOOTSTRAP_HOST)
-
+BOOTSTRAP_UI_IP=$(docker inspect -f '{{ .NetworkSettings.Networks.vault.IPAddress }}' $CONSUL_BOOTSTRAP_HOST)
+printf "UI: $BOOTSTRAP_UI_IP\n"
 # For running on local docker-machine
-if ! BOOTSTRAP_UI_IP=$(docker-machine ip); then {
-	BOOTSTRAP_UI_IP=127.0.0.1
-}
-fi
-
-#printf "%s\n" " [DEBUG] BOOTSTRAP_UI_IP is $BOOTSTRAP_UI_IP"
-BOOTSTRAP_UI_PORT=$(docker port "$CONSUL_BOOTSTRAP_HOST" | awk -F: '/8501/{print$2}')
-#printf "%s\n" " [DEBUG] BOOTSTRAP_UI_PORT is $BOOTSTRAP_UI_PORT"
+#if ! BOOTSTRAP_UI_IP=$(docker-machine ip); then {
+#	BOOTSTRAP_UI_IP=127.0.0.1
+#}
+#fi
 
 export CONSUL_BOOTSTRAP_HOST=$(docker inspect -f "{{ .NetworkSettings.Networks.vault.IPAddress}}" "$CONSUL_BOOTSTRAP_HOST")
 
 
-#printf "%s\n" " [DEBUG] CONSUL_BOOTSTRAP_HOST is $CONSUL_BOOTSTRAP_HOST"
-
 # Wait for the bootstrap instance
 printf '>Waiting for the bootstrap instance...'
-until curl -fs --connect-timeout 1 http://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_UI_PORT"/ui &> /dev/null; do
+until curl -fs --connect-timeout 1 http://"$BOOTSTRAP_UI_IP":8501/ui &> /dev/null; do
 	printf '.'
 	sleep .2
 done
@@ -58,7 +50,7 @@ done
 printf "%s\n" 'The bootstrap instance is now running'
 printf "%s\n" "Dashboard: https://${BOOTSTRAP_UI_IP}:${BOOTSTRAP_UI_PORT}/ui/"
 # Open browser pointing to the Consul UI
-command -v open >/dev/null 2>&1 && open https://"$BOOTSTRAP_UI_IP":"$BOOTSTRAP_UI_PORT"/ui/
+command -v open >/dev/null 2>&1 && open https://"$BOOTSTRAP_UI_IP":8501/ui/
 
 # Scale up the cluster
 printf "%s\n" "Scaling the Consul raft to ${CONSUL_CLUSTER_SIZE} nodes"
