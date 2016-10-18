@@ -36,7 +36,7 @@ RUN	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 	chown -R vault: /etc/vault &&\
 	chmod 660 /etc/vault/config.hcl &&\
 # Cleanup
-	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
+	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_* /bin/ssetcap
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY config.hcl /etc/vault/
