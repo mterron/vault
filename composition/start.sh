@@ -61,7 +61,6 @@ until docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault /bin/ash -c 'consul i
 	printf '.'
 	sleep .2
 done
-sleep 5
 
 printf "%s\n" 'Initialising Vault'
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault /bin/ash -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault init -key-shares=1 -key-threshold=1'
@@ -72,7 +71,10 @@ export VAULT_ADDR="https://$(docker inspect -f '{{ .NetworkSettings.Networks.vau
 export VAULT_SKIP_VERIFY=1
 export VAULT_TLS_SERVER_NAME=active.vault.service.consul
 export VAULT_CACERT=../tls/vault.service.consul.pem
+printf "Login to your new Vault cluster\n"
 vault auth
+printf "Enable Vault audit to file\n"
 vault audit-enable file file_path=/data/vault_audit.log
+printf "Mount Transit secret backend\n"
 vault mount transit
 printf "\e[1;91;5mRemember to delete the consul token from your home directory!\e[0m\n"
