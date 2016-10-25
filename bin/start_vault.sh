@@ -54,5 +54,11 @@ sed -i "$REPLACEMENT_CONSUL_DATACENTER" /etc/vault/config.hcl
 # Allow service discovery without a token
 consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl update --rule='service::read' anonymous
 
+# Detect Joyent Triton
+# Assign a privilege spec to the process that allows the process to lock memory
+if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
+    TRITON_PRIVS='ppriv -s EIP=basic,PROC_LOCK_MEMORY -e'
+fi
+
 log 'Starting Vault'
-exec setuidgid vault vault server -config=/etc/vault/config.hcl -log-level=warn
+$TRITON_PRIVS exec setuidgid vault vault server -config=/etc/vault/config.hcl -log-level=warn
