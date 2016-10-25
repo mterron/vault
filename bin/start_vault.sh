@@ -57,7 +57,7 @@ consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl update --rul
 # Detect Joyent Triton
 # Assign a privilege spec to the process that allows the process to lock memory
 if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
-    TRITON_PRIVS='ppriv -s EIP=basic,PROC_LOCK_MEMORY -e'
+    TRITON_PRIVS='/native/usr/bin/ppriv -s EIP=basic,PROC_LOCK_MEMORY -e'
 fi
 
 log 'Starting Vault'
