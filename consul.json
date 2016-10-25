@@ -21,15 +21,13 @@
 	"http":	 "unix:///data/consul.http.socket",
 	"https": "0.0.0.0",
 	"dns":	 "0.0.0.0",
-	"rpc":   "0.0.0.0"
+	"rpc":   "127.0.0.1"
 },
 "ports": {
 	"dns": 53,
 	"https": 8501
 },
 "unix_sockets": {
-	"user": "1000",
-	"group": "1000",
 	"mode": "770"
 },
 
