@@ -18,10 +18,10 @@
 "acl_master_token": "",
 
 "addresses": {
-	"http":	 "unix:///data/consul.http.socket",
+	"http":	 "unix:///data/consul.http.sock",
 	"https": "0.0.0.0",
 	"dns":	 "0.0.0.0",
-	"rpc":   "127.0.0.1"
+	"rpc":   "unix:///data/consul.rpc.sock"
 },
 "ports": {
 	"dns": 53,
@@ -32,9 +32,6 @@
 },
 
 "dns_config": {
-	"only_passing": true,
-	"enable_truncate": true,
-	"allow_stale": true,
-	"max_stale": "2s"
+	"enable_truncate": true
 }
 }

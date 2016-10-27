@@ -2,7 +2,8 @@
 TZ=Pacific/Auckland
 
 # Consul
-CONSUL_HTTP_ADDR=unix:///data/consul.http.socket
+CONSUL_HTTP_ADDR=unix:///data/consul.http.sock
+CONSUL_RPC_ADDR=unix:///data/consul.rpc.sock
 CONSUL_DC_NAME=demodc
 CONSUL_DNS_NAME=consul.service.consul
 #CONSUL_DOMAIN=consul
@@ -14,7 +15,7 @@ CONSUL_CLUSTER_SIZE=3
 #CONSUL_BOOTSTRAP_HOST=
 #CONSUL_ACL_DC=
 # If CONSUL_ENVIRONMENT is prod, Consul will use high performance settings: { "performance": {"raft_multiplier": 1} }
-# This container detects EC2 instance types and sets up performance accordingly if you do not set CONSUL_ENVIRONMENT to prod
+# This container detects EC2 and GCE instance types and sets up performance accordingly if you do not set CONSUL_ENVIRONMENT to prod
 CONSUL_ENVIRONMENT=prod
 
 # Vault
