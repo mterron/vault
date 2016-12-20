@@ -1,10 +1,6 @@
 FROM mterron/consul
 MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 
-# We don't need to expose these ports in order for other containers on Triton
-# to reach this container in the default networking environment, but if we
-# leave this here then we get the ports as well-known environment variables
-# for purposes of linking.
 EXPOSE 8200
 
 ENV BIFURCATE_VERSION=0.5.0 \
