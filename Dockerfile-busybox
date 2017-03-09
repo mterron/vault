@@ -13,10 +13,8 @@ COPY bin/ /bin
 COPY etc/ /etc
 
 USER root
-
-RUN apk --no-cache add libcap &&\
 # Download Bifurcate
-	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+RUN	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
 	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
@@ -26,7 +24,7 @@ RUN apk --no-cache add libcap &&\
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
-	setcap 'cap_ipc_lock=+ep' /bin/vault &&\
+	ssetcap 'cap_ipc_lock=+ep' /bin/vault &&\
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
 	mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
 # Create Vault user
@@ -34,8 +32,7 @@ RUN apk --no-cache add libcap &&\
 	chown -R vault: /etc/vault &&\
 	chmod 660 /etc/vault/config.hcl &&\
 # Cleanup
-	apk --no-cache del libcap &&\
-	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
+	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_* /bin/ssetcap
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY config.hcl /etc/vault/

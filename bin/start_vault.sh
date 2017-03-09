@@ -7,10 +7,9 @@ loge() {
 }
 
 # Add the Consul CA to the trusted list
-if [ ! -e /etc/ssl/certs/ca-consul.done ]; then {
+if [ ! -e /etc/ssl/certs/ca-consul.done ]; then
 	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt &&\
 	touch /etc/ssl/certs/ca-consul.done
-}
 fi
 
 # Wait for Consul to be available
@@ -20,9 +19,9 @@ until (consul info | grep leader_addr | grep '\d' >/dev/null 2>&1); do
 done
 log 'Consul is ready!'
 
-
 # Acquire Consul master token
 CONSUL_TOKEN=$(awk -F\" '/acl_master_token/{print $4}' /etc/consul/consul.json)
+
 # Get Vault service name from the config file. If empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
 VAULT_SERVICE_NAME=$(awk -F\" '/service =/{print $2}' /etc/vault/config.hcl | tr -d " /\"")
