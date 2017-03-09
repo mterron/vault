@@ -25,7 +25,7 @@ RUN apk --no-cache add libcap &&\
 # Install Bifurcate, Vault & Consul-cli
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
-	unzip -q --show-progress -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
+	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
 	setcap 'cap_ipc_lock=+ep' /bin/vault &&\
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
 	mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
