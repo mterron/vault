@@ -16,16 +16,16 @@ USER root
 
 RUN apk --no-cache add libcap &&\
 # Download Bifurcate
-	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+	wget -q --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
-	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
-	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
+	wget -q --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
+	wget -q --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
 # Download Consul CLI tool
 	wget https://github.com/CiscoCloud/consul-cli/releases/download/v${CONSULCLI_VERSION}/consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
 # Install Bifurcate, Vault & Consul-cli
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /bin/ &&\
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
-	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
+	unzip -q --show-progress -o vault_${VAULT_VERSION}_linux_amd64.zip -d /bin/ &&\
 	setcap 'cap_ipc_lock=+ep' /bin/vault &&\
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
 	mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
