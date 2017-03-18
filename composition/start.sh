@@ -29,22 +29,26 @@ CONSUL_BOOTSTRAP_HOST="${COMPOSE_PROJECT_NAME}_vault_1"
 printf "%s\n" "CONSUL_BOOTSTRAP_HOST is $CONSUL_BOOTSTRAP_HOST"
 
 # Default for production
-BOOTSTRAP_UI_IP=$(docker inspect -f '{{ .NetworkSettings.Networks.vault.IPAddress }}' $CONSUL_BOOTSTRAP_HOST)
-printf "UI: $BOOTSTRAP_UI_IP\n"
+BOOTSTRAP_UI_IP=$(docker inspect -f='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$CONSUL_BOOTSTRAP_HOST")printf "UI: $BOOTSTRAP_UI_IP\n"
 # For running on local docker-machine
 #if ! BOOTSTRAP_UI_IP=$(docker-machine ip); then {
 #	BOOTSTRAP_UI_IP=127.0.0.1
 #}
 #fi
 
-export CONSUL_BOOTSTRAP_HOST=$(docker inspect -f "{{ .NetworkSettings.Networks.vault.IPAddress}}" "$CONSUL_BOOTSTRAP_HOST")
-
+export CONSUL_BOOTSTRAP_HOST=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" "$CONSUL_BOOTSTRAP_HOST")
 
 # Wait for the bootstrap instance
 printf '>Waiting for the bootstrap instance...'
-until curl -fs --connect-timeout 1 http://"$BOOTSTRAP_UI_IP":8501/ui &> /dev/null; do
-	printf '.'
-	sleep .2
+TIMER=0
+until curl -fs --connect-timeout 1 http://"$BOOTSTRAP_UI_IP":"${BOOTSTRAP_UI_PORT-8501}"/ui &>/dev/null
+do
+    if [ $TIMER -eq 30 ]; then
+        break
+    fi
+    printf '.'
+    sleep 1
+    TIMER=$(( TIMER + 1))
 done
 
 printf "%s\n" 'The bootstrap instance is now running'
@@ -67,7 +71,7 @@ docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault /bin/ash -c 'VAULT_ADDR="ht
 for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
 	docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index="$i" vault unseal_vault.sh
 done
-export VAULT_ADDR="https://$(docker inspect -f '{{ .NetworkSettings.Networks.vault.IPAddress}}' demo_vault_1):8200"
+export VAULT_ADDR="https://$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demo_vault_1):8200"
 export VAULT_SKIP_VERIFY=1
 export VAULT_TLS_SERVER_NAME=active.vault.service.consul
 export VAULT_CACERT=../tls/vault.service.consul.pem

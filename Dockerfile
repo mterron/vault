@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 EXPOSE 8200
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.6.5 \
+	VAULT_VERSION=0.7.0 \
 	CONSULCLI_VERSION=0.3.1
 
 # Copy binaries. bin directory contains start_vault.sh vault-health.sh
@@ -14,9 +14,8 @@ COPY etc/ /etc
 
 USER root
 
-RUN apk --no-cache add libcap &&\
 # Download Bifurcate
-	wget -q --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+RUN	wget -q --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
 	wget -q --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget -q --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
@@ -34,7 +33,6 @@ RUN apk --no-cache add libcap &&\
 	chown -R vault: /etc/vault &&\
 	chmod 660 /etc/vault/config.hcl &&\
 # Cleanup
-	apk --no-cache del libcap &&\
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
 
 # Provide your own Vault config file and certificates
