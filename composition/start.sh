@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # check for prereqs
-command -v docker >/dev/null 2>&1 || { printf "%s\n" "Docker is required, but does not appear to be installed. See https://docs.joyent.com/public-cloud/api-access/docker"; exit; }
+command -v docker >/dev/null 2>&1 || { printf "%s\n" "Docker is required, but does not appear to be installed."; exit; }
 
 # default values which can be overriden by -f or -p flags
 export COMPOSE_FILE=
@@ -29,21 +29,17 @@ CONSUL_BOOTSTRAP_HOST="${COMPOSE_PROJECT_NAME}_vault_1"
 printf "%s\n" "CONSUL_BOOTSTRAP_HOST is $CONSUL_BOOTSTRAP_HOST"
 
 # Default for production
-BOOTSTRAP_UI_IP=$(docker inspect -f='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$CONSUL_BOOTSTRAP_HOST")printf "UI: $BOOTSTRAP_UI_IP\n"
-# For running on local docker-machine
-#if ! BOOTSTRAP_UI_IP=$(docker-machine ip); then {
-#	BOOTSTRAP_UI_IP=127.0.0.1
-#}
-#fi
+BOOTSTRAP_UI_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$CONSUL_BOOTSTRAP_HOST")
+printf "UI: $BOOTSTRAP_UI_IP\n"
 
-export CONSUL_BOOTSTRAP_HOST=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" "$CONSUL_BOOTSTRAP_HOST")
+export CONSUL_BOOTSTRAP_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$CONSUL_BOOTSTRAP_HOST")
 
 # Wait for the bootstrap instance
 printf '>Waiting for the bootstrap instance...'
 TIMER=0
-until curl -fs --connect-timeout 1 http://"$BOOTSTRAP_UI_IP":"${BOOTSTRAP_UI_PORT-8501}"/ui &>/dev/null
+until curl -fs --connect-timeout 1 https://"$BOOTSTRAP_UI_IP":"${BOOTSTRAP_UI_PORT-8501}"/ui &>/dev/null
 do
-    if [ $TIMER -eq 30 ]; then
+    if [ $TIMER -eq 60 ]; then
         break
     fi
     printf '.'
