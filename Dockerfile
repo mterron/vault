@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 EXPOSE 8200
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.7.5 \
+	VAULT_VERSION=0.7.0 \
 	CONSULCLI_VERSION=0.3.1
 
 # Copy binaries. bin directory contains start_vault.sh vault-health.sh
