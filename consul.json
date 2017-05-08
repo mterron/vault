@@ -13,6 +13,7 @@
 "verify_outgoing": true,
 "verify_server_hostname": true,
 
+"acl_enforce_version_8": false,
 "acl_datacenter": "",
 "acl_default_policy": "deny",
 "acl_master_token": "",
