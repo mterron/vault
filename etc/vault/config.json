@@ -1,10 +1,10 @@
 {
   "disable_mlock": false,
   "disable_cache": false,
-  "default_lease_ttl": "30d",
-  "max_lease_ttl": "30d",
+  "default_lease_ttl": "32d",
+  "max_lease_ttl": "32d",
 
-  "backend": {
+  "storage": {
     "consul": {
       "address": "unix:///data/consul.http.sock",
       "datacenter": "",
@@ -17,7 +17,7 @@
     }
   },
 
- "listener": {
+  "listener": {
     "tcp": {
       "address": "0.0.0.0:8200",
       "tls_cert_file": "/etc/tls/vault.service.consul.pem",

@@ -43,11 +43,8 @@ elif [ -z "$VAULT_CONSUL_TOKEN" ]; then
 	VAULT_CONSUL_TOKEN=$(jq -c -r '.backend.consul.token' /etc/vault/config.json)
 fi
 
-# Set Consul token
-{ rm /etc/vault/config.json; jq '.backend.consul.token = env.VAULT_CONSUL_TOKEN' > /etc/vault/config.json; } < /etc/vault/config.json
-
-# Set Consul datacenter
-{ rm /etc/vault/config.json; jq '.backend.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
+# Set Consul token & Datacenter
+{ rm /etc/vault/config.json; jq '.storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
 
 
 # Allow service discovery without a token
