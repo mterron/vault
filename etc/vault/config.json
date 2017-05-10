@@ -1,0 +1,27 @@
+{
+  "disable_mlock": false,
+  "disable_cache": false,
+  "default_lease_ttl": "30d",
+  "max_lease_ttl": "30d",
+
+  "backend": {
+    "consul": {
+      "address": "unix:///data/consul.http.sock",
+      "datacenter": "",
+      "path": "vault/",
+      "service": "",
+      "tls_ca_file": "/etc/tls/ca.pem",
+      "tls_cert_file": "/etc/tls/client.certificate.pem",
+      "tls_key_file": "/etc/tls/client.certificate.key",
+      "token": ""
+    }
+  },
+
+ "listener": {
+    "tcp": {
+      "address": "0.0.0.0:8200",
+      "tls_cert_file": "/etc/tls/vault.service.consul.pem",
+      "tls_key_file": "/etc/tls/vault.service.consul.key"
+    }
+  }
+}

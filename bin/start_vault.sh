@@ -24,9 +24,9 @@ CONSUL_TOKEN=$(awk -F\" '/acl_master_token/{print $4}' /etc/consul/consul.json)
 
 # Get Vault service name from the config file. If empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
-VAULT_SERVICE_NAME=$(awk -F\" '/service =/{print $2}' /etc/vault/config.hcl | tr -d " /\"")
+VAULT_SERVICE_NAME=$(jq -c -r '.backend.consul.service' /etc/vault/config.json)
 
-VAULT_PATH=$(awk -F= '/path =/{print $2}' /etc/vault/config.hcl  | tr -d " /\"")
+VAULT_PATH=$(jq -c -r '.backend.consul.path' /etc/vault/config.json)
 
 # Remove old Vault service registrations
 consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services | awk '/ID/{print $2}' | grep -v consul | grep -v "$(hostname -i)"|tr -d ",\""|xargs -r -n 1 -I SERVICEID consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" service deregister SERVICEID
@@ -36,18 +36,18 @@ consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services |
 # "path" on the K/V store and the "vault" service key and acquire a token
 # associated with that ACL. Else use the environment variable if it exists or
 # the existing token (from the config file)
-if [ -z "${VAULT_CONSUL_TOKEN:-$(awk -F\" '/token/{print $2}' /etc/vault/config.hcl)}" ]; then
+if [ -z "${VAULT_CONSUL_TOKEN:-$(jq -c -r '.backend.consul.token' /etc/vault/config.json)}" ]; then
 	log 'Acquiring Consul token'
 	VAULT_CONSUL_TOKEN=$(consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write")
 elif [ -z "$VAULT_CONSUL_TOKEN" ]; then
-	VAULT_CONSUL_TOKEN=$(awk -F\" '/token/{print $2}' /etc/vault/config.hcl)
+	VAULT_CONSUL_TOKEN=$(jq -c -r '.backend.consul.token' /etc/vault/config.json)
 fi
 
-REPLACEMENT_CONSUL_TOKEN="s/#*token = .*/token = \"${VAULT_CONSUL_TOKEN}\"/"
-sed -i "$REPLACEMENT_CONSUL_TOKEN" /etc/vault/config.hcl
+# Set Consul token
+{ rm /etc/vault/config.json; jq '.backend.consul.token = env.VAULT_CONSUL_TOKEN' > /etc/vault/config.json; } < /etc/vault/config.json
 
-REPLACEMENT_CONSUL_DATACENTER="s/#*datacenter = .*/datacenter = \"${CONSUL_DC_NAME}\"/"
-sed -i "$REPLACEMENT_CONSUL_DATACENTER" /etc/vault/config.hcl
+# Set Consul datacenter
+{ rm /etc/vault/config.json; jq '.backend.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
 
 
 # Allow service discovery without a token
@@ -60,4 +60,4 @@ if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
 fi
 
 log 'Starting Vault'
-exec setuidgid vault vault server -config=/etc/vault/config.hcl -log-level=warn
+exec setuidgid vault vault server -config=/etc/vault/config.json -log-level=warn

@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 EXPOSE 8200
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.6.5 \
+	VAULT_VERSION=0.7.2 \
 	CONSULCLI_VERSION=0.3.1
 
 # Copy binaries. bin directory contains start_vault.sh vault-health.sh
@@ -30,12 +30,12 @@ RUN	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VE
 # Create Vault user
 	adduser -g 'Vault user' -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/vault &&\
-	chmod 660 /etc/vault/config.hcl &&\
+	chmod 660 /etc/vault/config.json &&\
 # Cleanup
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_* /bin/ssetcap
 
 # Provide your own Vault config file and certificates
-ONBUILD COPY config.hcl /etc/vault/
+ONBUILD COPY config.json /etc/vault/
 ONBUILD COPY consul.json /etc/consul/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/

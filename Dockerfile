@@ -31,12 +31,12 @@ RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.
 # Create Vault user
 	adduser -g 'Vault user' -s /dev/null -D -G consul vault &&\
 	chown -R vault: /etc/vault &&\
-	chmod 660 /etc/vault/config.hcl &&\
+	chmod 660 /etc/vault/config.json &&\
 # Cleanup
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
 
 # Provide your own Vault config file and certificates
-ONBUILD COPY config.hcl /etc/vault/
+ONBUILD COPY config.json /etc/vault/
 ONBUILD COPY consul.json /etc/consul/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
