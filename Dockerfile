@@ -29,7 +29,8 @@ RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.
 	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
 	mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /bin &&\
 # Create Vault user & group and add root to the vault group
-	adduser -g 'Vault user' -s /dev/null -D -G consul vault &&\
+	adduser -g 'Vault user' -s /dev/null -D vault &&\
+	adduser vault consul &&\
 	adduser root vault &&\
 	chown -R vault: /etc/vault &&\
 	chmod 660 /etc/vault/config.json &&\
