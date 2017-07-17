@@ -1,4 +1,5 @@
 #!/bin/ash
+set -e
 log() {
 	printf "%s\n" "$@"|awk '{print strftime("%FT%T%z",systime()),"[INFO] start_vault.sh:",$0}'
 }
@@ -20,7 +21,7 @@ done
 log 'Consul is ready!'
 
 # Acquire Consul master token
-CONSUL_TOKEN=$(awk -F\" '/acl_master_token/{print $4}' /etc/consul/consul.json)
+CONSUL_TOKEN=$(jq -c -r '.acl_master_token' /etc/consul/consul.json)
 
 # Get Vault service name from the config file. If empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
@@ -28,8 +29,9 @@ VAULT_SERVICE_NAME=$(jq -c -r '.backend.consul.service' /etc/vault/config.json)
 
 VAULT_PATH=$(jq -c -r '.backend.consul.path' /etc/vault/config.json)
 
+# Obsolete as of vault 0.6.0
 # Remove old Vault service registrations
-consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services | awk '/ID/{print $2}' | grep -v consul | grep -v "$(hostname -i)"|tr -d ",\""|xargs -r -n 1 -I SERVICEID consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" service deregister SERVICEID
+#consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" agent services | awk '/ID/{print $2}' | grep -v consul | grep -v "$(hostname -i)"|tr -d ",\""|xargs -r -n 1 -I SERVICEID consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" service deregister SERVICEID
 
 # If VAULT_CONSUL_TOKEN environment variable is not set and there's no token on
 # the Vault configuration file, create an ACL in Consul with access to Vault's
@@ -57,4 +59,4 @@ if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
 fi
 
 log 'Starting Vault'
-exec setuidgid vault vault server -config=/etc/vault/config.json -log-level=warn
+exec su-exec vault:vault vault server -config=/etc/vault/config.json -log-level=warn
