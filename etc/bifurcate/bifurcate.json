@@ -6,6 +6,11 @@
       ]
     },
     "vault": {
+      "requires": [
+        {
+          "file": "/data/consul.http.sock"
+        }
+      ],
       "args": [
         "/usr/local/bin/start_vault.sh"
       ]

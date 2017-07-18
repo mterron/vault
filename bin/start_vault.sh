@@ -15,17 +15,22 @@ fi
 
 # Wait for Consul to be available
 log 'Waiting for Consul instance...'
-until (consul info | grep leader_addr | grep '\d' >/dev/null 2>&1); do
+until (consul info 2>/dev/null | grep leader_addr | grep -q '\d'); do
 	sleep 5s
 done
 log 'Consul is ready!'
 
 # Acquire Consul master token
-CONSUL_TOKEN=$(jq -c -r '.acl_master_token' /etc/consul/consul.json)
+CONSUL_TOKEN="${CONSUL_ACL_MASTER_TOKEN:-$(jq -c -r '.acl_master_token' /etc/consul/consul.json)}"
+
+# Allow service discovery without a token
+consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl update --rule="service::read" anonymous
 
 # Get Vault service name from the config file. If empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
-VAULT_SERVICE_NAME=$(jq -c -r '.storage.consul.service' /etc/vault/config.json)
+if [ -z "${VAULT_SERVICE_NAME:-$(jq -c -r '.storage.consul.service' /etc/vault/config.json)}" ]; then
+	export VAULT_SERVICE_NAME=vault
+fi
 
 VAULT_PATH=$(jq -c -r '.storage.consul.path' /etc/vault/config.json)
 
@@ -39,18 +44,16 @@ VAULT_PATH=$(jq -c -r '.storage.consul.path' /etc/vault/config.json)
 # associated with that ACL. Else use the environment variable if it exists or
 # the existing token (from the config file)
 if [ -z "${VAULT_CONSUL_TOKEN:-$(jq -c -r '.storage.consul.token' /etc/vault/config.json)}" ]; then
-	log 'Acquiring Consul token'
-	export VAULT_CONSUL_TOKEN=$(consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write")
+	log 'Acquiring a Consul token for Vault'
+	export VAULT_CONSUL_TOKEN=$(consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write" --rule="service::read")
 elif [ -z "$VAULT_CONSUL_TOKEN" ]; then
 	export VAULT_CONSUL_TOKEN=$(jq -c -r '.storage.consul.token' /etc/vault/config.json)
 fi
 
-# Set Consul token & Datacenter
-{ rm /etc/vault/config.json; jq '.storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
-
-
-# Allow service discovery without a token
-consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl update --rule='service::read' anonymous
+# Set Consul token & Datacenter in the config file
+{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
+unset VAULT_CONSUL_TOKEN
+unset VAULT_SERVICE_NAME
 
 # Detect Joyent Triton
 # Assign a privilege spec to the process that allows it to lock memory
@@ -59,4 +62,4 @@ if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
 fi
 
 log 'Starting Vault'
-exec su-exec vault:vault vault server -config=/etc/vault/config.json -log-level=warn
+exec su-exec vault:consul vault server -config=/etc/vault/config.json -log-level=warn
