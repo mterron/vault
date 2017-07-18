@@ -2,12 +2,12 @@
   "programs": {
     "consul": {
       "args": [
-        "/bin/start_consul.sh"
+        "/usr/local/bin/start_consul.sh"
       ]
     },
     "vault": {
       "args": [
-        "/bin/start_vault.sh"
+        "/usr/local/bin/start_vault.sh"
       ]
     }
   }

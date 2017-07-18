@@ -25,9 +25,9 @@ CONSUL_TOKEN=$(jq -c -r '.acl_master_token' /etc/consul/consul.json)
 
 # Get Vault service name from the config file. If empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
-VAULT_SERVICE_NAME=$(jq -c -r '.backend.consul.service' /etc/vault/config.json)
+VAULT_SERVICE_NAME=$(jq -c -r '.storage.consul.service' /etc/vault/config.json)
 
-VAULT_PATH=$(jq -c -r '.backend.consul.path' /etc/vault/config.json)
+VAULT_PATH=$(jq -c -r '.storage.consul.path' /etc/vault/config.json)
 
 # Obsolete as of vault 0.6.0
 # Remove old Vault service registrations
@@ -38,11 +38,11 @@ VAULT_PATH=$(jq -c -r '.backend.consul.path' /etc/vault/config.json)
 # "path" on the K/V store and the "vault" service key and acquire a token
 # associated with that ACL. Else use the environment variable if it exists or
 # the existing token (from the config file)
-if [ -z "${VAULT_CONSUL_TOKEN:-$(jq -c -r '.backend.consul.token' /etc/vault/config.json)}" ]; then
+if [ -z "${VAULT_CONSUL_TOKEN:-$(jq -c -r '.storage.consul.token' /etc/vault/config.json)}" ]; then
 	log 'Acquiring Consul token'
-	VAULT_CONSUL_TOKEN=$(consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write")
+	export VAULT_CONSUL_TOKEN=$(consul-cli --token="$CONSUL_TOKEN" --consul="$CONSUL_HTTP_ADDR" acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write")
 elif [ -z "$VAULT_CONSUL_TOKEN" ]; then
-	VAULT_CONSUL_TOKEN=$(jq -c -r '.backend.consul.token' /etc/vault/config.json)
+	export VAULT_CONSUL_TOKEN=$(jq -c -r '.storage.consul.token' /etc/vault/config.json)
 fi
 
 # Set Consul token & Datacenter

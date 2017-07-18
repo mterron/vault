@@ -23,7 +23,7 @@ printf "%s\n" 'Starting a Consul service'
 printf "%s\n" '>Pulling the most recent images'
 #docker-compose pull
 printf "%s\n" '>Starting initial container'
-docker-compose up -d --remove-orphans
+docker-compose up -d --remove-orphans --force-recreate
 
 CONSUL_BOOTSTRAP_HOST="${COMPOSE_PROJECT_NAME}_vault_1"
 printf "%s\n" "CONSUL_BOOTSTRAP_HOST is $CONSUL_BOOTSTRAP_HOST"
@@ -39,7 +39,7 @@ printf '>Waiting for the bootstrap instance...'
 TIMER=0
 until curl -fs --connect-timeout 1 https://"$BOOTSTRAP_UI_IP":"${BOOTSTRAP_UI_PORT-8501}"/ui &>/dev/null
 do
-    if [ $TIMER -eq 60 ]; then
+    if [ $TIMER -eq 20 ]; then
         break
     fi
     printf '.'
