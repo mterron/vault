@@ -1,8 +1,8 @@
 {
   "disable_mlock": false,
   "disable_cache": false,
-  "default_lease_ttl": "32d",
-  "max_lease_ttl": "32d",
+  "default_lease_ttl": "744h",
+  "max_lease_ttl": "768h",
 
   "storage": {
     "consul": {
