@@ -61,5 +61,10 @@ if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
     /native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
 fi
 
+
+# Vault redirect address
+export VAULT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:8200"
+export VAULT_REDIRECT_ADDR="$VAULT_ADDR"
+
 log 'Starting Vault'
 exec su-exec vault:consul vault server -config=/etc/vault/config.json -log-level=warn
