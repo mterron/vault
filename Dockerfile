@@ -36,6 +36,9 @@ ONBUILD COPY config.json /etc/vault/
 ONBUILD COPY consul.json /etc/consul/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
+# Fix permissions
+ONBUILD RUN chown -R vault: /etc/vault &&\
+			chmod 660 /etc/vault/config.json
 
 # When you build on top of this image, put Consul data on a separate volume to
 # avoid filesystem performance issues with Docker image layers
