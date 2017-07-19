@@ -22,6 +22,16 @@ shift $(( OPTIND - 1 ))
 # give the docker remote api more time before timeout
 export COMPOSE_HTTP_TIMEOUT=300
 
+echo -e "Vault composition
+_______________
+\             /
+ \    \e[36mo\e[34mo\e[36mo\e[0m    /
+  \   \e[36mo\e[36mo\e[34mo\e[0m   /
+   \  \e[34mo\e[34mo\e[36mo\e[0m  /
+    \  \e[36mo\e[0m  /
+     \   /
+      \ /
+       v"
 printf "%s\n\n" "Starting a ${COMPOSE_PROJECT_NAME} Vault cluster ▼ "
 printf "* Pulling the most recent images\n"
 docker-compose pull
@@ -67,12 +77,11 @@ do
 done
 printf "\e[0;32m✔︎ \e[0m\n"
 
-printf ">>> Cluster is running <<<\n\n"
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault init -check'
 printf "Initialising Vault\n"
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault init -key-shares=1 -key-threshold=1'
 for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
-	printf "%s\n" "Unsealing ${COMPOSE_PROJECT_NAME}_vault_$i"
+	printf "\n%s\n" "Unsealing ${COMPOSE_PROJECT_NAME}_vault_$i"
 	docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index="$i" vault unseal_vault.sh
 done
 export VAULT_ADDR="https://$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demo_vault_1):8200"
