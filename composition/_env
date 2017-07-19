@@ -18,6 +18,46 @@ CONSUL_CLUSTER_SIZE=3
 CONSUL_ENVIRONMENT=prod
 
 # Vault
-VAULT_REDIRECT_ADDR=https://active.vault.service.consul:8200
+# Variable name             Value
+# VAULT_TOKEN               The Vault authentication token. If not specified,
+#                           the token located in $HOME/.vault-token will be
+#                           used if it exists.
+#
+# VAULT_ADDR                The address of the Vault server expressed as a URL
+#                           and port, for example: http://127.0.0.1:8200
+#
+# VAULT_CACERT              Path to a PEM-encoded CA cert file to use to verify
+#                           the Vault server SSL certificate.
+#
+# VAULT_CAPATH              Path to a directory of PEM-encoded CA cert files to
+#                           verify the Vault server SSL certificate. If
+#                           VAULT_CACERT is specified, its value will take
+#                           precedence.
+#
+# VAULT_CLIENT_CERT         Path to a PEM-encoded client certificate for TLS
+#                           authentication to the Vault server.
+#
+# VAULT_CLIENT_KEY          Path to an unencrypted PEM-encoded private key
+#                           matching the client certificate.
+#
+# VAULT_CLUSTER_ADDR        The address that should be used for other cluster
+#                           members to connect to this node when in HA mode.
+#
+# VAULT_MAX_RETRIES         The maximum number of retries when a 5xx error code
+#                           is encountered. Default is 2, for three total tries;
+#                           set to 0 or less to disable retrying.
+#
+# VAULT_REDIRECT_ADDR       The address that should be used
+#                           when clients are redirected to this node when in
+#                           High Availability mode.
+#
+# VAULT_SKIP_VERIFY         If set, do not verify Vault's presented certificate
+#                           before communicating with it. Setting this variable
+#                           is not recommended except during testing.
+#
+# VAULT_TLS_SERVER_NAME     If set, use the given name as the SNI host when
+#                           connecting via TLS.
+#
+VAULT_ADDR=https://active.vault.service.consul:8200
 #VAULT_CONSUL_TOKEN=
-#VAULT_CONSUL_PATH=CONSUL_DC_NAME=demodc
+#VAULT_CONSUL_PATH=

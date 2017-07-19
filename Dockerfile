@@ -4,10 +4,9 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 EXPOSE 8200
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.7.3 \
-	CONSULCLI_VERSION=0.3.1
+	VAULT_VERSION=0.7.3
 
-# Copy binaries. bin directory contains start_vault.sh vault-health.sh
+# Copy binaries. bin directory contains start_vault.sh vault-health.sh and consul-cli
 COPY bin/ /usr/local/bin
 # Copy /etc (Vault config, Bifurcate config)
 COPY etc/ /etc
@@ -19,15 +18,11 @@ RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.
 # Download Vault binary & integrity file
 	curl -L# -ovault_${VAULT_VERSION}_linux_amd64.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	curl -L# -ovault_${VAULT_VERSION}_SHA256SUMS https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
-# Download Consul CLI tool
-	curl -L# -oconsul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz https://github.com/CiscoCloud/consul-cli/releases/download/v${CONSULCLI_VERSION}/consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
-# Install Bifurcate, Vault & Consul-cli
+# Install Bifurcate, Vault
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /usr/local/bin/ &&\
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /usr/local/bin/ &&\
 	setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault &&\
-	tar xzf consul-cli_${CONSULCLI_VERSION}_linux_amd64.tar.gz &&\
-	mv consul-cli_${CONSULCLI_VERSION}_linux_amd64/consul-cli /usr/local/bin &&\
 # Create Vault user & group and add root to the vault group
 	adduser -g 'Vault user' -s /dev/null -D vault &&\
 	adduser vault consul &&\
@@ -35,7 +30,7 @@ RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.
 	chown -R vault: /etc/vault &&\
 	chmod 660 /etc/vault/config.json &&\
 # Cleanup
-	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz consul-cli_${CONSULCLI_VERSION}_*
+	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY config.json /etc/vault/
