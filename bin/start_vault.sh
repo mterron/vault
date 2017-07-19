@@ -1,5 +1,4 @@
 #!/bin/ash
-set -e
 log() {
 	printf "%s\n" "$@"|awk '{print strftime("%FT%T%z",systime()),"[INFO] start_vault.sh:",$0}'
 }
@@ -29,8 +28,9 @@ consul-cli acl update --rule="node::read" --rule="service::read" anonymous
 # Get Vault service name from the environment or config file. If both are empty it will default to
 # "vault" as per https://www.vaultproject.io/docs/config/index.html#service
 if [ -z "${VAULT_SERVICE_NAME:-$(jq -cr '.storage.consul.service' /etc/vault/config.json)}" ]; then
-	export VAULT_SERVICE_NAME=vault
+	VAULT_SERVICE_NAME=vault
 fi
+export VAULT_SERVICE_NAME
 
 # Get Vault storage path in Consul KV
 export VAULT_PATH=$(jq -cr '.storage.consul.path' /etc/vault/config.json)
@@ -47,13 +47,13 @@ fi
 # the existing token (from the config file)
 if [ -z "${VAULT_CONSUL_TOKEN:-$(jq -cr '.storage.consul.token' /etc/vault/config.json)}" ]; then
 	log 'Acquiring a Consul token for Vault'
-	export VAULT_CONSUL_TOKEN=$(consul-cli acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}/:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write" --rule="node::write" --rule="agent::write" --rule="session::write" --rule="service::read")
+	export VAULT_CONSUL_TOKEN=$(consul-cli acl create --name="$HOSTNAME Vault Token" --rule="key:${VAULT_PATH:-vault}:write" --rule="service:${VAULT_SERVICE_NAME:-vault}:write" --rule="node::write" --rule="agent::write" --rule="session::write" --rule="service::read")
 elif [ -z "$VAULT_CONSUL_TOKEN" ]; then
 	export VAULT_CONSUL_TOKEN=$(jq -cr '.storage.consul.token' /etc/vault/config.json)
 fi
 
 # Set Consul token & Datacenter in the config file
-{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
+su -s/bin/sh vault -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
 
 # Detect Joyent Triton
 # Assign a privilege spec to the process that allows it to lock memory

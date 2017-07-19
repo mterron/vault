@@ -6,13 +6,6 @@ EXPOSE 8200
 ENV BIFURCATE_VERSION=0.5.0 \
 	VAULT_VERSION=0.7.3
 
-# Copy binaries. bin directory contains start_vault.sh vault-health.sh and consul-cli
-COPY bin/ /usr/local/bin
-# Copy /etc (Vault config, Bifurcate config)
-COPY etc/ /etc
-
-USER root
-
 # Download Bifurcate
 RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
@@ -27,10 +20,16 @@ RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.
 	adduser -g 'Vault user' -s /dev/null -D vault &&\
 	adduser vault consul &&\
 	adduser root vault &&\
-	chown -R vault: /etc/vault &&\
-	chmod 660 /etc/vault/config.json &&\
 # Cleanup
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz
+
+# Copy binaries. bin directory contains start_vault.sh vault-health.sh and consul-cli
+COPY bin/ /usr/local/bin
+# Copy /etc (Vault config, Bifurcate config)
+COPY etc/ /etc
+
+RUN chown -R vault: /etc/vault &&\
+	chmod 660 /etc/vault/config.json
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY config.json /etc/vault/
