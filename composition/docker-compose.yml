@@ -1,8 +1,4 @@
 version: "2"
-networks:
-  default:
-    external:
-      name: macvlan
 services:
   vault:
     image: mterron/vault
