@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 EXPOSE 8200
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.7.3
+	VAULT_VERSION=0.8.0
 
 # Download Bifurcate
 RUN	curl -L# -obifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
