@@ -1,17 +1,25 @@
 FROM mterron/consul
 MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 
+ARG BUILD_DATE
+ARG VCS_REF
+
 ENV BIFURCATE_VERSION=0.5.0 \
 	VAULT_VERSION=0.8.0
+
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.schema-version=$VAULT_VERSION
 
 # Download Bifurcate
 RUN apk add --no-cache ca-certificates gnupg wget &&\
 	gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C &&\
-	wget https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+	wget -nv --progress=bar:force --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
-	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
-	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
-	wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig &&\
+	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
+	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
+	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig &&\
 # Install Bifurcate, Vault
 	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /usr/local/bin/ &&\
 	gpg --batch --verify vault_${VAULT_VERSION}_SHA256SUMS.sig vault_${VAULT_VERSION}_SHA256SUMS &&\
