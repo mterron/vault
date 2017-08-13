@@ -12,8 +12,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.schema-version="1.0.0-rc.1" \
       org.label-schema.version=$VAULT_VERSION \
-      org.label-schema.description="Vault secure production ready Docker image" \
-      org.label-schema.vendor=$MAINTAINER
+      org.label-schema.description="Vault secure production ready Docker image" 
 
 # Download Bifurcate
 RUN apk add --no-cache ca-certificates gnupg wget &&\
