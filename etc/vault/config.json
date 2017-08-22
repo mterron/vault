@@ -11,8 +11,8 @@
       "path": "vault/",
       "service": "",
       "tls_ca_file": "/etc/tls/ca.pem",
-      "tls_cert_file": "/etc/tls/client.certificate.pem",
-      "tls_key_file": "/etc/tls/client.certificate.key",
+      "tls_cert_file": "/etc/tls/client_certificate.pem",
+      "tls_key_file": "/etc/tls/client_certificate.key",
       "token": ""
     }
   },
