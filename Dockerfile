@@ -42,16 +42,18 @@ COPY bin/ /usr/local/bin
 COPY etc/ /etc
 
 RUN chown -R vault: /etc/vault &&\
-	chmod 660 /etc/vault/config.json
+	chmod 660 /etc/vault/config.json &&\
+	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY config.json /etc/vault/
 ONBUILD COPY consul.json /etc/consul/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
-# Fix permissions
+# Fix permissions & add custom certs to the system certicate store
 ONBUILD RUN chown -R vault: /etc/vault &&\
-			chmod 660 /etc/vault/config.json
+			chmod 660 /etc/vault/config.json &&\
+			cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
 # When you build on top of this image, put Consul data on a separate volume to
 # avoid filesystem performance issues with Docker image layers
