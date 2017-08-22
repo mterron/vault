@@ -30,8 +30,8 @@ echo -e "Vault composition
      \  \e[36mo\e[0m  /
       \   /
        \ /
-        *"
-printf "%s\n" "Starting a ${COMPOSE_PROJECT_NAME} Vault cluster ▼ "
+        ∨"
+printf "%s\n" "Starting a ${COMPOSE_PROJECT_NAME} ▽ Vault cluster"
 printf "\n* Pulling the most recent images\n"
 docker-compose pull
 printf "\n* Starting initial container:\n"
@@ -69,7 +69,7 @@ printf "\n%s\n" "* Scaling the Consul raft to ${CONSUL_CLUSTER_SIZE} nodes"
 docker-compose -p "$COMPOSE_PROJECT_NAME" scale vault=$CONSUL_CLUSTER_SIZE
 
 printf ' >Waiting for Consul cluster quorum acquisition and stabilisation ...'
-until docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault consul-cli status leader | jq -ce 'if . != "" then true else false end' >/dev/null
+until docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault sh -c "consul-cli status leader | jq -ce 'if . != \"\" then true else false end' >/dev/null"
 do
 	printf '.'
 	sleep 5
@@ -89,6 +89,20 @@ done
 #export VAULT_CAPATH=~/.vault/cert/
 #export VAULT_CLIENT_CERT=~/.vault/cert/client_certificate.crt
 #export VAULT_CLIENT_KEY=~/.vault/cert/client_certificate.key
+
+printf ' >Waiting for Vault cluster stabilisation ...'
+TIMER=0
+until docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault sh -c "consul-cli catalog service vault --consistent --tag active | jq -e '.[].ID' >/dev/null"
+do
+    if [ $TIMER -eq 20 ]; then
+        break
+    fi
+    printf '.'
+    sleep 1
+    TIMER=$(( TIMER + 1))
+done
+printf "\e[0;32m done\e[0m\n"
+
 printf "\n\nLogin to your new Vault cluster\n"
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec --index=1 vault vault auth
 printf "\n* Enabling Vault audit to file\n"
