@@ -40,6 +40,8 @@ RUN apk add --no-cache ca-certificates gnupg wget &&\
 COPY bin/ /usr/local/bin
 # Copy /etc (Vault config, Bifurcate config)
 COPY etc/ /etc
+# Copy client certificates
+COPY client_certificate.* /etc/tls/
 
 RUN chown -R vault: /etc/vault &&\
 	chmod 660 /etc/vault/config.json &&\
@@ -62,4 +64,3 @@ ONBUILD RUN chown -R vault: /etc/vault &&\
 EXPOSE 8200
 
 ENTRYPOINT ["bifurcate","/etc/bifurcate/bifurcate.json"]
-
