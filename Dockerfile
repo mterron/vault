@@ -5,7 +5,7 @@ ARG BUILD_DATE
 ARG VCS_REF
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.8.0
+	VAULT_VERSION=0.8.3
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
