@@ -5,17 +5,17 @@ ARG BUILD_DATE
 ARG VCS_REF
 
 ENV BIFURCATE_VERSION=0.5.0 \
-	VAULT_VERSION=0.8.3
+	VAULT_VERSION=0.9.0
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.schema-version="1.0.0-rc.1" \
       org.label-schema.version=$VAULT_VERSION \
-      org.label-schema.description="Vault secure production ready Docker image" 
+      org.label-schema.description="Vault secure production ready Docker image"
 
 # Download Bifurcate
-RUN apk add --no-cache ca-certificates gnupg wget &&\
+RUN apk -q --no-cache add ca-certificates gnupg wget &&\
 	gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C &&\
 	wget -nv --progress=bar:force --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
@@ -29,11 +29,12 @@ RUN apk add --no-cache ca-certificates gnupg wget &&\
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /usr/local/bin/ &&\
 	setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault &&\
 # Create Vault user & group and add root to the vault group
-	adduser -g 'Vault user' -s /dev/null -D vault &&\
+	addgroup -S vault &&\
+	adduser -H -h /tmp -D -S -G vault -g 'Vault user' -s /dev/null -D vault &&\
 	adduser vault consul &&\
 	adduser root vault &&\
 # Cleanup
-	apk del --purge ca-certificates gnupg wget &&\
+	apk -q --no-cache del --purge ca-certificates gnupg wget &&\
 	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz /root/.gnupg
 
 # Copy binaries. bin directory contains start_vault.sh vault-health.sh and consul-cli
