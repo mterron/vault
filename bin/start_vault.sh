@@ -25,8 +25,9 @@ log 'Consul is ready!'
 # Allow service & node discovery without a token
 consul-cli acl update --rule="node::read" --rule="service::read" anonymous
 
-# Get Vault service name from the environment or config file. If both are empty it will default to
-# "vault" as per https://www.vaultproject.io/docs/config/index.html#service
+# Get Vault service name from the environment or config file. If both are empty
+# it will default to "vault" as per
+# https://www.vaultproject.io/docs/config/index.html#service
 if [ -z "${VAULT_SERVICE_NAME:-$(jq -cr '.storage.consul.service' /etc/vault/config.json)}" ]; then
 	VAULT_SERVICE_NAME=vault
 fi
@@ -53,12 +54,16 @@ elif [ -z "$VAULT_CONSUL_TOKEN" ]; then
 fi
 
 # Set Consul token & Datacenter in the config file
-su -s/bin/sh vault -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
+su -s /bin/sh vault -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
 
-# Detect Joyent Triton
-# Assign a privilege spec to the process that allows it to lock memory
-if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then
-    /native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
+
+# Fix privileges
+if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then # Joyent Triton (Illumos)
+	# Assign a privilege spec to the process that allows it to lock memory
+	/native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
+else
+	# Assign a linux capability to the Vault binary that allows it to lock memory
+	setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault
 fi
 
 # Vault redirect address

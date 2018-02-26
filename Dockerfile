@@ -4,9 +4,10 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 ARG BUILD_DATE
 ARG VCS_REF
 ARG HASHICORP_PGP_KEY=51852D87348FFC4C
-ARG VAULT_VERSION=0.9.3
+ARG VAULT_VERSION=0.9.5
 
 ENV BIFURCATE_VERSION=0.5.0
+ENV VAULT_CLI_NO_COLOR=1
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
@@ -16,7 +17,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.description="Vault secure production ready Docker image"
 
 # Download Bifurcate
-RUN apk -q --no-cache add ca-certificates gnupg wget &&\
+RUN apk -q --no-cache add ca-certificates curl gnupg wget &&\
 	gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C &&\
 	wget -nv --progress=bar:force --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
 # Download Vault binary & integrity file
@@ -66,3 +67,4 @@ ONBUILD RUN chown -R vault: /etc/vault &&\
 EXPOSE 8200
 
 ENTRYPOINT ["bifurcate","/etc/bifurcate/bifurcate.json"]
+
