@@ -6,7 +6,7 @@
 
   "storage": {
     "consul": {
-      "address": "unix:///data/consul.http.sock",
+      "address": "unix://{{ CONSUL_DATA_DIR }}/consul.http.sock",
       "datacenter": "",
       "path": "vault/",
       "service": "",

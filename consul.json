@@ -17,7 +17,7 @@
 "acl_master_token": "",
 
 "addresses": {
-	"http":	 "unix:///data/consul.http.sock",
+	"http":	 "unix://{{ CONSUL_DATA_DIR }}/consul.http.sock",
 	"https": "0.0.0.0",
 	"dns":	 "0.0.0.0"
 },
