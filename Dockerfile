@@ -2,12 +2,9 @@ FROM mterron/consul
 MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 
 ARG BUILD_DATE
-ARG VCS_REF
-ARG HASHICORP_PGP_KEY=51852D87348FFC4C
-ARG VAULT_VERSION=0.9.5
-
-ENV BIFURCATE_VERSION=0.5.0
-ENV VAULT_CLI_NO_COLOR=1
+ARG	VCS_REF
+ARG	HASHICORP_PGP_KEY=51852D87348FFC4C
+ARG	VAULT_VERSION=0.10.0
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
@@ -16,16 +13,14 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version=$VAULT_VERSION \
       org.label-schema.description="Vault secure production ready Docker image"
 
-# Download Bifurcate
-RUN apk -q --no-cache add ca-certificates curl gnupg wget &&\
-	gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C &&\
-	wget -nv --progress=bar:force --show-progress https://github.com/novilabs/bifurcate/releases/download/v${BIFURCATE_VERSION}/bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz &&\
+WORKDIR /tmp
+RUN	apk -q --no-cache add ca-certificates curl gnupg wget &&\
 # Download Vault binary & integrity file
+	gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig &&\
-# Install Bifurcate, Vault
-	tar xzf bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz -C /usr/local/bin/ &&\
+# Install Vault
 	gpg --batch --verify vault_${VAULT_VERSION}_SHA256SUMS.sig vault_${VAULT_VERSION}_SHA256SUMS &&\
 	grep "linux_amd64.zip" vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -sc &&\
 	unzip -q -o vault_${VAULT_VERSION}_linux_amd64.zip -d /usr/local/bin/ &&\
@@ -33,20 +28,30 @@ RUN apk -q --no-cache add ca-certificates curl gnupg wget &&\
 # Create Vault user & group and add root to the vault group
 	addgroup -S vault &&\
 	adduser -H -h /tmp -D -S -G vault -g 'Vault user' -s /dev/null -D vault &&\
-	adduser vault consul &&\
-	adduser root vault &&\
+	addgroup vault consul &&\
 # Cleanup
 	apk -q --no-cache del --purge ca-certificates gnupg wget &&\
-	rm -rf vault_${VAULT_VERSION}_* bifurcate_${BIFURCATE_VERSION}_linux_amd64.tar.gz /root/.gnupg
+	rm -rf vault_${VAULT_VERSION}_* /root/.gnupg
 
-# Copy binaries. bin directory contains start_vault.sh vault-health.sh and consul-cli
+# Add Containerpilot
+ARG	CONTAINERPILOT_VERSION=3.7.0
+RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
+	curl -sSL "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" | tar xzf - -C /usr/local/bin &&\
+	echo -e "#!/bin/sh\ncurl -kisSfi1 --head https://127.0.0.1:8200/v1/sys/health?standbycode=204 >/dev/null" > /usr/local/bin/vault-healthcheck &&\
+	echo -e "#!/bin/sh\nsu-exec consul:consul consul-cli status leader|jq -e 'if . != \"\" then true else false end'>/dev/null"> /usr/local/bin/consul-healthcheck &&\
+	chown root:root /usr/local/bin/* &&\
+	chmod +x /usr/local/bin/* &&\
+	echo -e "\e[1;32m  ✔\e[0m"
+
+# Copy binaries. bin directory contains start_vault.sh and consul-cli
 COPY bin/ /usr/local/bin
-# Copy /etc (Vault config, Bifurcate config)
+# Copy /etc (Vault config, Containerpilot  config)
 COPY etc/ /etc
 # Copy client certificates
 COPY client_certificate.* /etc/tls/
 
 RUN chown -R vault: /etc/vault &&\
+	chmod +x /usr/local/bin/* &&\
 	chmod 660 /etc/vault/config.json &&\
 	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
@@ -57,14 +62,13 @@ ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
 # Fix permissions & add custom certs to the system certicate store
 ONBUILD RUN chown -R vault: /etc/vault &&\
+			chmod +x /usr/local/bin/* &&\
 			chmod 660 /etc/vault/config.json &&\
 			cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
-# When you build on top of this image, put Consul data on a separate volume to
-# avoid filesystem performance issues with Docker image layers
-#VOLUME ["/data"]
+ENV VAULT_CLI_NO_COLOR=1 \
+	CONTAINERPILOT=/etc/containerpilot.json5
 
 EXPOSE 8200
 
-ENTRYPOINT ["bifurcate","/etc/bifurcate/bifurcate.json"]
-
+ENTRYPOINT ["containerpilot"]
