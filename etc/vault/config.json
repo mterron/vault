@@ -1,4 +1,5 @@
 {
+  "ui": true,
   "disable_mlock": false,
   "disable_cache": false,
   "default_lease_ttl": "744h",
@@ -6,14 +7,10 @@
 
   "storage": {
     "consul": {
-      "address": "unix://{{ CONSUL_DATA_DIR }}/consul.http.sock",
-      "datacenter": "",
       "path": "vault/",
-      "service": "",
       "tls_ca_file": "/etc/tls/ca.pem",
       "tls_cert_file": "/etc/tls/client_certificate.pem",
-      "tls_key_file": "/etc/tls/client_certificate.key",
-      "token": ""
+      "tls_key_file": "/etc/tls/client_certificate.key"
     }
   },
 
