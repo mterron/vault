@@ -1,0 +1,39 @@
+{
+	consul: "localhost:8500",
+	logging: {
+		level: "INFO",
+		format: "default",
+		output: "stdout"
+	},
+	jobs: [
+		{
+			name: "startup",
+			exec: "prestart.sh",
+			restarts: "never"
+		},
+		{
+			name: "consul",
+			exec: "/usr/local/bin/start_consul.sh",
+			restarts: "unlimited",
+			when: {
+				source: "startup",
+				once: "exitSuccess"
+			},
+			health: {
+				exec: "consul-healthcheck",
+				interval: 20,
+				ttl: 60,
+				timeout: "5s"
+			}
+		},
+		{
+			name: "vault",
+			exec: "/usr/local/bin/start_vault.sh",
+			restarts: "never",
+			when: {
+				source: "consul",
+				once: "healthy"
+			},
+		}
+	]
+}
