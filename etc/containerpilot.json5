@@ -7,18 +7,9 @@
 	},
 	jobs: [
 		{
-			name: "startup",
-			exec: "prestart.sh",
-			restarts: "never"
-		},
-		{
 			name: "consul",
 			exec: "/usr/local/bin/start_consul.sh",
 			restarts: "unlimited",
-			when: {
-				source: "startup",
-				once: "exitSuccess"
-			},
 			health: {
 				exec: "consul-healthcheck",
 				interval: 20,

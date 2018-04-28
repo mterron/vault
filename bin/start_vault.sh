@@ -25,14 +25,14 @@ set -e
 
 # Allow service & node discovery without a token
 log "Setting anonymous ACL for service discovery"
-su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data '{"ID": "anonymous",  "Type": "client",  "Rules": "node \"\" { policy = \"read\" } service \"\" { policy = \"read\" }"}' -XPUT http://consul/v1/acl/update
+su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data '{"ID": "anonymous",  "Type": "client",  "Rules": "node \"\" { policy = \"read\" } service \"\" { policy = \"read\" }"}' -XPUT http://consul/v1/acl/update >/dev/null
 
 # Get Vault service name from the environment or config file. If both are empty
 # it will default to "vault" as per
 # https://www.vaultproject.io/docs/config/index.html#service
 if [ -z "$VAULT_SERVICE_NAME" ]; then
-	if [ "$(jq -cr '.storage.consul.service' /etc/vault/config.json)" != 'null' ]; then
-		VAULT_SERVICE_NAME="$(jq -cr '.storage.consul.service' /etc/vault/config.json)}"
+	if [ "$(su-exec vault jq -cr '.storage.consul.service' /etc/vault/config.json)" != 'null' ]; then
+		VAULT_SERVICE_NAME="$(su-exec vault jq -cr '.storage.consul.service' /etc/vault/config.json)}"
 	else
 		VAULT_SERVICE_NAME=vault
 	fi
@@ -42,11 +42,11 @@ fi
 export VAULT_SERVICE_NAME
 
 # Get Vault storage path in Consul KV
-export VAULT_PATH=$(jq -cr '.storage.consul.path' /etc/vault/config.json)
+export VAULT_PATH=$(su-exec vault jq -cr '.storage.consul.path' /etc/vault/config.json)
 
 # Remove old Vault service registrations
 if [ "${SERVICEID:-$(su-exec consul curl -s --unix-socket /data/consul.http.sock http://consul/v1/agent/services | jq -cr '.[].ID|select(. == "consul"|not)|select(.|contains(env.HOSTNAME)|not)')}" ]; then
-	su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" -XPUT http://consul/v1/agent/service/deregister/"$SERVICEID"
+	su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" -XPUT http://consul/v1/agent/service/deregister/"$SERVICEID" >/dev/null
 fi
 
 # If VAULT_CONSUL_TOKEN environment variable is not set and there's no token on
@@ -55,12 +55,12 @@ fi
 # associated with that ACL. Else use the environment variable if it exists or
 # the existing token (from the config file)
 if [ -z "$VAULT_CONSUL_TOKEN" ]; then
-	if [ "$(jq -cr '.storage.consul.token' /etc/vault/config.json)" == 'null' ]; then
+	if [ "$(su-exec vault jq -cr '.storage.consul.token' /etc/vault/config.json)" == 'null' ]; then
 #		log 'Acquiring a Consul token for Vault'
 #		export VAULT_CONSUL_TOKEN=$(su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data @/etc/consul/vault.policy -XPUT http://consul/v1/acl/create | jq -cre '.Token')
 		export VAULT_CONSUL_TOKEN=$CONSUL_HTTP_TOKEN
 	else
-		export VAULT_CONSUL_TOKEN=$(jq -cr '.storage.consul.token' /etc/vault/config.json)
+		export VAULT_CONSUL_TOKEN=$(su-exec vault jq -cr '.storage.consul.token' /etc/vault/config.json)
 	fi
 fi
 
