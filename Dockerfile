@@ -71,4 +71,6 @@ ENV VAULT_CLI_NO_COLOR=1 \
 
 EXPOSE 8200
 
+HEALTHCHECK --start-period=600s CMD set -e && set -o pipefail && vault status -format=json | jq -ce '.sealed == false'
+
 ENTRYPOINT ["containerpilot"]
