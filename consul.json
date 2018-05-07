@@ -14,9 +14,9 @@
 "acl_default_policy": "deny",
 
 "addresses": {
-	"https": "0.0.0.0",
 	"dns": "0.0.0.0",
 	"http": "unix:///data/consul.http.sock"
+	"https": "0.0.0.0",
 },
 "ports": {
 	"dns": 53,
@@ -26,6 +26,7 @@
 	"mode": "770"
 },
 
+"recursors": [ "1.1.1.1", "1.0.0.1", "9.9.9.9" ],
 "dns_config": {
 	"enable_truncate": true
 }
