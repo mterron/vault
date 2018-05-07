@@ -104,7 +104,7 @@ done
 
 printf ' >Waiting for Vault cluster stabilisation ...'
 TIMER=0
-until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN=$CONSUL_TOKEN vault sh -c "su-exec consul curl -sS --unix-socket /data/consul.http.sock http://consul/v1/catalog/service/vault?consistent=true&tag=active | jq -e '.[].Address' >/dev/null"
+until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN=$CONSUL_TOKEN vault sh -c "su-exec consul curl -sS --unix-socket /data/consul.http.sock http://consul/v1/catalog/service/vault?consistent&tag=active | jq -e '.[].Address' >/dev/null"
 do
 	if [ $TIMER -eq 20 ]; then
 		break
