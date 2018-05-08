@@ -43,7 +43,7 @@ BOOTSTRAP_UI_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAdd
 export CONSUL_BOOTSTRAP_HOST="$BOOTSTRAP_UI_IP"
 
 # Wait for the bootstrap instance
-printf ' >Waiting for the bootstrap instance ...'
+printf ' > Waiting for the bootstrap instance ...'
 TIMER=0
 until (docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault su-exec consul: test -e /data/node-id)
 do
@@ -62,7 +62,7 @@ printf "\n%s\n" "* Scaling the Consul raft to ${CONSUL_CLUSTER_SIZE} nodes"
 docker-compose -p "$COMPOSE_PROJECT_NAME" up -d --no-recreate --scale vault=$CONSUL_CLUSTER_SIZE
 
 # Wait for Consul to be available
-printf ' >Waiting for Consul cluster quorum acquisition and stabilisation ...'
+printf ' > Waiting for Consul cluster quorum acquisition and stabilisation ...'
 until (docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault consul-healthcheck)
 do
 	printf '.'
@@ -102,7 +102,7 @@ for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
 	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp --index="$i" vault unseal_vault.sh
 done
 
-printf ' >Waiting for Vault cluster stabilisation ...'
+printf ' > Waiting for Vault cluster stabilisation ...'
 TIMER=0
 until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN=$CONSUL_TOKEN vault sh -c "su-exec consul curl -sS --unix-socket /data/consul.http.sock http://consul/v1/catalog/service/vault?consistent&tag=active | jq -e '.[].Address' >/dev/null"
 do
@@ -119,8 +119,6 @@ printf "\n\nLogin to your new Vault cluster\n"
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault login
 printf "\n* Enabling Vault audit to file\n"
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault audit enable file file_path=/data/vault_audit.log
-#printf "\n* Mount KV secret backend\n"
-#docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault secrets enable -path=secret -version=1 kv
 printf "\n* Mount Transit secret backend\n"
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault secrets enable transit
 printf "\n* Cleaning up\n"
