@@ -15,11 +15,11 @@ fi
 # Acquire Consul master token
 log "Waiting for Consul token"
 until [ -e /tmp/CT ]; do
-	sleep 2
+	sleep 1
 done
 log "Consul token found!"
 export CONSUL_HTTP_TOKEN=$(cat /tmp/CT)
-rm -rf /tmp/CT
+shred -fuz /tmp/CT
 
 set -e
 
