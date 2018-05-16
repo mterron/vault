@@ -1,9 +1,11 @@
-#!/bin/ash
+#!/bin/sh
 log() {
 	printf "start_vault.sh %s\n" "$@"
 }
-loge() {
-	printf "start_vault.sh [ERR] %s\n" "$@" >&2
+logd() {
+	if [ ${DEBUG:-} ]; then
+		printf "start_vault.sh [DEBUG] %s\n" "$@"
+	fi
 }
 
 # Add the Consul CA to the trusted list
@@ -13,18 +15,19 @@ if [ ! -e /etc/ssl/certs/ca-consul.done ]; then
 fi
 
 # Acquire Consul master token
-log "Waiting for Consul token"
+logd "Waiting for Consul token"
 until [ -e /tmp/CT ]; do
 	sleep 1
 done
-log "Consul token found!"
+logd "Consul token found!"
 export CONSUL_HTTP_TOKEN=$(cat /tmp/CT)
 shred -fuz /tmp/CT
+fstrim /
 
 set -e
 
 # Allow service & node discovery without a token
-log "Setting anonymous ACL for service discovery"
+logd "Setting anonymous ACL for service discovery"
 su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data '{"ID": "anonymous",  "Type": "client",  "Rules": "node \"\" { policy = \"read\" } service \"\" { policy = \"read\" }"}' -XPUT http://consul/v1/acl/update >/dev/null
 
 # Get Vault service name from the environment or config file. If both are empty
@@ -56,7 +59,7 @@ fi
 # the existing token (from the config file)
 if [ -z "$VAULT_CONSUL_TOKEN" ]; then
 	if [ "$(su-exec vault jq -cr '.storage.consul.token' /etc/vault/config.json)" == 'null' ]; then
-#		log 'Acquiring a Consul token for Vault'
+#		logd 'Acquiring a Consul token for Vault'
 #		export VAULT_CONSUL_TOKEN=$(su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data @/etc/consul/vault.policy -XPUT http://consul/v1/acl/create | jq -cre '.Token')
 		export VAULT_CONSUL_TOKEN=$CONSUL_HTTP_TOKEN
 	else
