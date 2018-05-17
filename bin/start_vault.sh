@@ -1,10 +1,7 @@
 #!/bin/sh
-log() {
-	printf "start_vault.sh %s\n" "$@"
-}
 logd() {
 	if [ ${DEBUG:-} ]; then
-		printf "start_vault.sh [DEBUG] %s\n" "$@"
+		printf "[DEBUG] %s\n" "$@"
 	fi
 }
 
