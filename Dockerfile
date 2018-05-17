@@ -16,7 +16,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 WORKDIR /tmp
 RUN	apk -q --no-cache add ca-certificates curl gnupg wget &&\
 # Download Vault binary & integrity file
-	gpg --receive-keys "$HASHICORP_PGP_KEY" &&\
+	gpg --keyserver pgp.mit.edu --receive-keys "$HASHICORP_PGP_KEY" &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig &&\
