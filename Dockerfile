@@ -34,7 +34,7 @@ RUN	apk -q --no-cache add ca-certificates curl gnupg wget &&\
 	rm -rf vault_${VAULT_VERSION}_* /root/.gnupg
 
 # Add Containerpilot
-ARG	CONTAINERPILOT_VERSION=3.7.0
+ARG	CONTAINERPILOT_VERSION=3.8.0
 RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	curl -sSL "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" | tar xzf - -C /usr/local/bin &&\
 	echo -e "#!/bin/sh\ncurl -kisSfi1 --head https://127.0.0.1:8200/v1/sys/health?standbycode=204 >/dev/null" > /usr/local/bin/vault-healthcheck &&\
