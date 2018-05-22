@@ -14,7 +14,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.description="Vault secure production ready Docker image"
 
 WORKDIR /tmp
-RUN	apk -q --no-cache add ca-certificates curl gnupg wget &&\
+RUN	apk -q --no-cache add ca-certificates gnupg wget &&\
 # Download Vault binary & integrity file
 	gpg --keyserver pgp.mit.edu --receive-keys "$HASHICORP_PGP_KEY" &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
