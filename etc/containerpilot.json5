@@ -8,7 +8,7 @@
 	jobs: [
 		{
 			name: "consul",
-			exec: "/usr/local/bin/start_consul.sh",
+			exec: "/usr/local/bin/start_consul",
 			restarts: "unlimited",
 			health: {
 				exec: "consul-healthcheck",
@@ -19,7 +19,7 @@
 		},
 		{
 			name: "vault",
-			exec: "/usr/local/bin/start_vault.sh",
+			exec: "/usr/local/bin/start_vault",
 			restarts: "never",
 			when: {
 				source: "consul",
