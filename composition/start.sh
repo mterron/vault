@@ -47,7 +47,10 @@ printf ' > Waiting for the bootstrap instance ...'
 TIMER=0
 until (docker-compose -p "$COMPOSE_PROJECT_NAME" exec vault su-exec consul: test -e /data/node-id)
 do
-    if [ $TIMER -gt 180 ]; then
+	IS_RESTARTING=$(docker ps --quiet --filter 'status=restarting' --filter "name=${COMPOSE_PROJECT_NAME}_vault_1" | wc -l)
+	if [ "$IS_RESTARTING" -eq 1 ]; then
+		break
+    elif [ $TIMER -gt 180 ]; then
         exit 1
     fi
     printf '.'
@@ -74,7 +77,7 @@ printf "\e[0;32m done\e[0m\n"
 printf "\n%s\n" '* Bootstrapping Consul ACL system'
 set -e
 
-CONSUL_TOKEN=$(docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c "su-exec consul curl --unix-socket /data/consul.http.sock -XPUT http://consul/v1/acl/bootstrap 2>/dev/null | jq -M -e -c -r '.ID' | tr -d '\000-\037'")
+CONSUL_TOKEN=$(docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c "su-exec consul curl -s --unix-socket /data/consul.http.sock -XPUT http://consul/v1/acl/bootstrap 2>/dev/null | jq -M -e -c -r '.ID' | tr -d '\000-\037'")
 echo -e "Consul ACL token: \e[38;5;198m${CONSUL_TOKEN}\e[0m"
 printf "%s\n\n" "Consul Dashboard: https://${BOOTSTRAP_UI_IP}:${BOOTSTRAP_UI_PORT:-8501}/ui/"
 # Open browser pointing to the Consul UI
@@ -83,28 +86,27 @@ command -v open >/dev/null 2>&1 && open "https://$BOOTSTRAP_UI_IP:${BOOTSTRAP_UI
 sleep 15
 
 for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
-	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_TOKEN=$CONSUL_TOKEN -e AGENT_TOKEN=$CONSUL_TOKEN --index=$i -w /tmp vault sh -c 'su-exec consul curl --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_TOKEN" --data "{\"Token\": \"$CONSUL_TOKEN\"}" -XPUT http://consul/v1/agent/token/acl_agent_token'
+	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_TOKEN=$CONSUL_TOKEN -e AGENT_TOKEN=$CONSUL_TOKEN --index=$i -w /tmp vault sh -c 'su-exec consul curl -s --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_TOKEN" --data "{\"Token\": \"$CONSUL_TOKEN\"}" -XPUT http://consul/v1/agent/token/acl_agent_token'
 done
 
 
 for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
-	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_TOKEN=$CONSUL_TOKEN --index=$i vault sh -c 'echo ${CONSUL_TOKEN}>/tmp/CT'
+	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /data -e CONSUL_TOKEN=$CONSUL_TOKEN --index=$i vault sh -c 'echo ${CONSUL_TOKEN}>/tmp/CT&&chmod 600 /tmp/CT'
 done
 set +e
 
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp -u vault vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault operator init -status'
-
 printf "\n* Initialising Vault\n"
-docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp -u vault vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault operator init -key-shares=1 -key-threshold=1'
+docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp -u vault vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault operator init -key-shares=1 -key-threshold=1' | grep :
 
 for ((i=1; i <= CONSUL_CLUSTER_SIZE ; i++)); do
 	printf "\n%s\n" "* Unsealing ${COMPOSE_PROJECT_NAME}_vault_$i"
-	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp --index="$i" vault unseal_vault.sh
+	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp --index="$i" vault unseal_vault
 done
 
-printf ' > Waiting for Vault cluster stabilisation ...'
+printf '\n\n > Waiting for Vault cluster stabilisation ...'
 TIMER=0
-until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN=$CONSUL_TOKEN vault sh -c "su-exec consul curl -sS --unix-socket /data/consul.http.sock 'http://consul/v1/catalog/service/vault?tag=active&consistent' | jq -ce '.[].Address'>/dev/null"
+until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN=$CONSUL_TOKEN vault sh -c "su-exec consul curl -s --unix-socket /data/consul.http.sock 'http://consul/v1/catalog/service/vault?tag=active&consistent' | jq -ce '.[].Address'>/dev/null"
 do
 	if [ $TIMER -eq 20 ]; then
 		break
