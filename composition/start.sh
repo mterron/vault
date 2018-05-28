@@ -98,7 +98,7 @@ done
 
 set +e
 printf '* Initialising Vault'
-if docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp -u vault vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault operator init -status >/dev/null;exit $?'; then
+if docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp -u vault vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:8200" vault operator init -status >/dev/null;exit $?'; then
 	printf '\e[31;1mERROR, Vault is already initialised\e[m\n'
 	exit 1
 elif [ "$?" -eq "1" ]; then
