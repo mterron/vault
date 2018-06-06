@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 ARG BUILD_DATE
 ARG	VCS_REF
 ARG	HASHICORP_PGP_KEY=51852D87348FFC4C
-ARG	VAULT_VERSION=0.10.1
+ARG	VAULT_VERSION=0.10.2
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
@@ -61,8 +61,7 @@ ONBUILD COPY consul.json /etc/consul/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
 # Fix permissions & add custom certs to the system certicate store
-ONBUILD RUN chown -R vault: /etc/vault &&\
-			chmod +x /usr/local/bin/* &&\
+ONBUILD RUN chown vault:vault /etc/vault/config.json &&\
 			chmod 660 /etc/vault/config.json &&\
 			cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
