@@ -81,7 +81,7 @@ printf '\e[0;32m done\e[0m\n\n'
 
 printf '* Bootstrapping Consul ACL system\n'
 set -e
-CONSUL_TOKEN=$(docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c "su-exec consul curl -s --unix-socket /data/consul.http.sock -XPUT http://consul/v1/acl/bootstrap 2>/dev/null | jq -M -e -c -r '.ID' | tr -d '\\000-\\037'")
+CONSUL_TOKEN=$(docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c "su-exec consul curl -s --unix-socket /var/run/consul.http.sock -XPUT http://consul/v1/acl/bootstrap 2>/dev/null | jq -M -e -c -r '.ID' | tr -d '\\000-\\037'")
 printf "Consul ACL token: \e[38;5;198m${CONSUL_TOKEN}\e[0m\n"
 printf '%s\n' "Consul Dashboard: https://${BOOTSTRAP_UI_IP}:${BOOTSTRAP_UI_PORT:-8501}/ui/"
 # Open browser pointing to the Consul UI
@@ -89,7 +89,7 @@ command -v open >/dev/null 2>&1 && open "https://$BOOTSTRAP_UI_IP:${BOOTSTRAP_UI
 
 printf '* Installing Agent token'
 for i in $(seq $CONSUL_CLUSTER_SIZE); do
-	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_TOKEN="$CONSUL_TOKEN" -e AGENT_TOKEN="$CONSUL_TOKEN" --index=$i -w /tmp vault sh -c 'su-exec consul curl -s --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_TOKEN" --data "{\"Token\": \"$CONSUL_TOKEN\"}" -XPUT http://consul/v1/agent/token/acl_agent_token'
+	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_TOKEN="$CONSUL_TOKEN" -e AGENT_TOKEN="$CONSUL_TOKEN" --index=$i -w /tmp vault sh -c 'su-exec consul curl -s --unix-socket /var/run/consul.http.sock --header "X-Consul-Token: $CONSUL_TOKEN" --data "{\"Token\": \"$CONSUL_TOKEN\"}" -XPUT http://consul/v1/agent/token/acl_agent_token'
 done
 printf '\e[1;32m  ✔\e[0m\n'
 printf '* Exporting Consul token'
@@ -117,7 +117,7 @@ done
 
 printf '\n\n > Waiting for Vault cluster stabilisation ...'
 TIMER=0
-until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN="$CONSUL_TOKEN" vault sh -c "su-exec consul curl -s --unix-socket /data/consul.http.sock 'http://consul/v1/catalog/service/vault?tag=active&consistent' | jq -ce '.[].Address'>/dev/null"
+until docker-compose -p "$COMPOSE_PROJECT_NAME" exec -e CONSUL_HTTP_TOKEN="$CONSUL_TOKEN" vault sh -c "su-exec consul curl -s --unix-socket /var/run/consul.http.sock 'http://consul/v1/catalog/service/vault?tag=active&consistent' | jq -ce '.[].Address'>/dev/null"
 do
 	if [ $TIMER -eq 20 ]; then
 		break
@@ -135,7 +135,7 @@ docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault au
 printf '\n* Mount Transit secret backend\n'
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault secrets enable transit
 printf '\n* Cleaning up\n'
-docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault  --index=1 vault sh -c 'rm -f ~/.vault-token'
+docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault sh -c 'rm -f ~/.vault-token'
 
 printf '%s\n\n' "Vault Dashboard: https://${BOOTSTRAP_UI_IP}:8200/ui/"
 # Open browser pointing to the Vault UI

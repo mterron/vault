@@ -2,7 +2,7 @@
 TZ=Pacific/Auckland
 
 # Consul
-CONSUL_HTTP_ADDR=unix:///data/consul.http.sock
+CONSUL_HTTP_ADDR=unix:///var/run/consul.http.sock
 CONSUL_DC_NAME=demodc
 CONSUL_DNS_NAME=consul.service.consul
 #CONSUL_DOMAIN=consul
