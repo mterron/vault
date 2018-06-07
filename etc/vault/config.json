@@ -7,7 +7,7 @@
 
   "storage": {
     "consul": {
-      "address": "unix:///var/run/consul.http.sock",
+      "address": "unix:///data/consul.http.sock",
       "path": "vault/",
       "tls_ca_file": "/etc/tls/ca.pem",
       "tls_cert_file": "/etc/tls/client_certificate.pem",
