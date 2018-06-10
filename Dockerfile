@@ -45,25 +45,21 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 
 # Copy binaries. bin directory contains start_vault.sh and consul-cli
 COPY bin/ /usr/local/bin
-# Copy /etc (Vault config, Containerpilot  config)
-COPY etc/ /etc
+# Copy /etc (Vault config, Containerpilot config)
+COPY --chown=vault:vault etc/vault /etc/vault
+COPY etc/containerpilot.json5 /etc
 # Copy client certificates
 COPY client_certificate.* /etc/tls/
 
-RUN chown -R vault: /etc/vault &&\
-	chmod +x /usr/local/bin/* &&\
-	chmod 660 /etc/vault/config.json &&\
-	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
+RUN	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
 # Provide your own Vault config file and certificates
-ONBUILD COPY config.json /etc/vault/
-ONBUILD COPY consul.json /etc/consul/
+ONBUILD COPY --chown=vault:vault config.json /etc/vault/
+ONBUILD COPY --chown=consul:consul consul.json /etc/consul/
 ONBUILD COPY tls/* /etc/tls/
 ONBUILD COPY client_certificate.* /etc/tls/
 # Fix permissions & add custom certs to the system certicate store
-ONBUILD RUN chown vault:vault /etc/vault/config.json &&\
-			chmod 660 /etc/vault/config.json &&\
-			cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
+ONBUILD RUN cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
 ENV VAULT_CLI_NO_COLOR=1 \
 	CONTAINERPILOT=/etc/containerpilot.json5
