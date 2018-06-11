@@ -59,8 +59,6 @@ ONBUILD COPY client_certificate.* /etc/tls/
 # Fix permissions & add custom certs to the system certicate store
 ONBUILD RUN cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
-ENV VAULT_CLI_NO_COLOR=1
-
 EXPOSE 8200
 
 HEALTHCHECK --start-period=600s CMD set -e && set -o pipefail && vault status -format=json | jq -ce '.sealed == false'
