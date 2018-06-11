@@ -46,12 +46,10 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 # Copy binaries. bin directory contains start_vault.sh and consul-cli
 COPY bin/ /usr/local/bin
 # Copy /etc (Vault config, Containerpilot config)
-COPY --chown=vault:vault etc/vault /etc/vault
-COPY etc/containerpilot.json5 /etc
+COPY --chown=vault:vault config.json /etc/vault
+COPY containerpilot.json5 /etc
 # Copy client certificates
 COPY client_certificate.* /etc/tls/
-
-RUN	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY --chown=vault:vault config.json /etc/vault/
@@ -61,13 +59,11 @@ ONBUILD COPY client_certificate.* /etc/tls/
 # Fix permissions & add custom certs to the system certicate store
 ONBUILD RUN cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
-ENV VAULT_CLI_NO_COLOR=1 \
-	CONTAINERPILOT=/etc/containerpilot.json5
+ENV VAULT_CLI_NO_COLOR=1
 
 EXPOSE 8200
 
 HEALTHCHECK --start-period=600s CMD set -e && set -o pipefail && vault status -format=json | jq -ce '.sealed == false'
 
-ENTRYPOINT ["containerpilot"]
-
+ENTRYPOINT ["containerpilot", "-config", "/etc/containerpilot.json5"]
 COPY Dockerfile /etc/
