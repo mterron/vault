@@ -43,10 +43,11 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	chmod +x /usr/local/bin/* &&\
 	echo -e "\e[1;32m  ✔\e[0m"
 
-# Copy binaries. bin directory contains start_vault.sh and consul-cli
-COPY bin/ /usr/local/bin
-# Copy /etc (Vault config, Containerpilot config)
+# Copy scripts
+COPY bin/* /usr/local/bin
+# Copy Vault config
 COPY --chown=vault:vault config.json /etc/vault
+# Copy Containerpilot config
 COPY containerpilot.json5 /etc
 # Copy client certificates
 COPY client_certificate.* /etc/tls/
