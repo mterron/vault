@@ -1,4 +1,4 @@
-version: "2"
+version: "2.4"
 services:
   vault:
     image: mterron/vault
@@ -30,3 +30,4 @@ services:
         - SETUID
         - SETGID
         - IPC_LOCK
+        - CHOWN
