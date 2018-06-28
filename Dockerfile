@@ -46,7 +46,9 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 # Copy scripts
 COPY bin/* /usr/local/bin/
 # Copy Vault config
-COPY --chown=vault:vault config.json /etc/vault
+COPY --chown=vault:vault config.json /etc/vault/
+# Copy Vault certificates
+COPY --chown=vault:vault tls/* /etc/tls/
 # Copy Containerpilot config
 COPY containerpilot.json5 /etc/
 # Copy client certificates
