@@ -16,7 +16,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 WORKDIR /tmp
 RUN	apk -q --no-cache add ca-certificates gnupg wget &&\
 # Download Vault binary & integrity file
-	gpg --keyserver pgp.mit.edu --receive-keys "$HASHICORP_PGP_KEY" &&\
+	gpg --keyserver ha.pool.sks-keyservers.net --receive-keys "$HASHICORP_PGP_KEY" &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig &&\
@@ -44,11 +44,11 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	echo -e "\e[1;32m  ✔\e[0m"
 
 # Copy scripts
-COPY bin/* /usr/local/bin
+COPY bin/* /usr/local/bin/
 # Copy Vault config
 COPY --chown=vault:vault config.json /etc/vault
 # Copy Containerpilot config
-COPY containerpilot.json5 /etc
+COPY containerpilot.json5 /etc/
 # Copy client certificates
 COPY client_certificate.* /etc/tls/
 
