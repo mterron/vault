@@ -69,7 +69,7 @@ fi
 su-exec vault sh -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
 
 
-# Fix privileges
+# Fix process privileges
 if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then # Joyent Triton (Illumos)
 	# Assign a privilege spec to the process that allows it to lock memory
 	/native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
@@ -87,5 +87,13 @@ unset VAULT_PATH
 unset VAULT_CONSUL_TOKEN
 unset VAULT_SERVICE_NAME
 unset CONSUL_HTTP_TOKEN
+unset CONSUL_DC_NAME
+unset CONSUL_DNS_NAME
+unset CONSUL_ENCRYPT_TOKEN
+unset CONSUL_CLUSTER_SIZE
+unset CONSUL_BOOTSTRAP_HOST
+unset CONSUL_ACL_DC
+unset CONSUL_ENVIRONMENT
 
+su-exec consul: chmod 775 /data
 exec su-exec vault:consul vault server -config=/etc/vault/config.json -log-level=warn
