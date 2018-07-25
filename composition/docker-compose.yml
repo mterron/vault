@@ -2,11 +2,34 @@ version: "2.4"
 services:
   vault:
     image: mterron/vault
+    read_only: true
     restart: always
     ulimits:
         memlock: 9223372036854775807
     volumes:
-        - /data
+      - /data
+      - /etc/consul
+      - /etc/vault
+      - /etc/ssl/certs
+    tmpfs:
+      - /tmp
+      - /run
+    env_file: _env
+    environment:
+        - CONSUL_BOOTSTRAP_HOST
+    dns:
+        - 127.0.0.1
+    dns_search:
+        - service.consul
+    cap_drop:
+        - ALL
+    cap_add:
+        - CHOWN
+        - SETFCAP
+        - NET_BIND_SERVICE
+        - SETUID
+        - SETGID
+        - IPC_LOCK
     ports:
         - 53
         - "53/udp"
@@ -17,19 +40,3 @@ services:
         - 8302
         - "8302/udp"
         - 8501
-    dns:
-        - 127.0.0.1
-    dns_search:
-        - service.consul
-    env_file: _env
-    environment:
-        - CONSUL_BOOTSTRAP_HOST
-    cap_drop:
-        - ALL
-    cap_add:
-        - CHOWN
-        - SETFCAP
-        - NET_BIND_SERVICE
-        - SETUID
-        - SETGID
-        - IPC_LOCK

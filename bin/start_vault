@@ -5,6 +5,12 @@ logd() {
 	fi
 }
 
+# Fix process privileges
+if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then # Joyent Triton (Illumos)
+	# Assign a privilege spec to the process that allows it to lock memory
+	/native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
+fi
+
 # Add the Consul CA to the trusted list
 if [ ! -e /etc/ssl/certs/ca-consul.done ]; then
 	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt &&\
@@ -67,16 +73,6 @@ fi
 
 # Set Consul token & Datacenter in the config file
 su-exec vault sh -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
-
-
-# Fix process privileges
-if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then # Joyent Triton (Illumos)
-	# Assign a privilege spec to the process that allows it to lock memory
-	/native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
-else
-	# Assign a linux capability to the Vault binary that allows it to lock memory
-	setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault
-fi
 
 # Vault redirect address
 export VAULT_REDIRECT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:${VAULT_PORT:-8200}"

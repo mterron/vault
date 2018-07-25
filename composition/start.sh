@@ -1,4 +1,5 @@
 #!/bin/sh
+. ~/.profile
 # check for prereqs
 command -v docker >/dev/null 2>&1 || { printf 'Docker is required, but does not appear to be installed.\n'; exit; }
 command -v jq >/dev/null 2>&1 || { printf 'jq is required, but does not appear to be installed.\n'; exit; }
@@ -7,7 +8,7 @@ clear
 
 # default values which can be overriden by -f or -p flags
 export COMPOSE_FILE=
-export COMPOSE_PROJECT_NAME=demo
+export COMPOSE_PROJECT_NAME=composition
 export "$(grep CONSUL_CLUSTER_SIZE _env)"
 
 while getopts "f:p:" optchar; do
@@ -31,8 +32,8 @@ printf 'Vault composition
      \  \e[36mo\e[0m  /     \ V / (_| | |_| | | |_
       \   /       \_/ \__,_|\__,_|_|\__|
        \ /
-        ∨\n'
-printf '%s\n' "Starting a ${COMPOSE_PROJECT_NAME} ▽ Vault cluster"
+        V\n'
+printf '%s\n' "Starting a Vault cluster called ${COMPOSE_PROJECT_NAME}"
 printf '\n* Pulling the most recent images\n'
 docker-compose pull
 printf '\n* Starting initial container:\n'
