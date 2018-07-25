@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 ARG BUILD_DATE
 ARG	VCS_REF
 ARG	HASHICORP_PGP_KEY=51852D87348FFC4C
-ARG	VAULT_VERSION=0.10.3
+ARG	VAULT_VERSION=0.10.4
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
