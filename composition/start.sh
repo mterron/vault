@@ -99,9 +99,14 @@ for i in $(seq $CONSUL_CLUSTER_SIZE); do
 done
 printf '\e[1;32m  ✔\e[0m\n\n'
 
+while ! docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c 'nslookup ${HOSTNAME}.node.${CONSUL_DOMAIN:-consul} 127.0.0.1 &> /dev/null'
+do
+    sleep 2
+done
+
 set +e
 printf '* Initialising Vault\n'
-if docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c 'sed "s/$HOSTNAME/$HOSTNAME.node.consul/" /etc/hosts | grep $HOSTNAME >> /etc/hosts;VAULT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:8200" vault operator init -status >/dev/null;exit $?'; then
+if docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:8200" vault operator init -status >/dev/null;exit $?'; then
 	printf '\e[31;1mERROR, Vault is already initialised\e[m\n'
 	exit 1
 elif [ "$?" -eq "1" ]; then
@@ -109,11 +114,12 @@ elif [ "$?" -eq "1" ]; then
     exit 1
 fi
 
-docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.consul:8200" vault operator init -key-shares=1 -key-threshold=1' | grep ':'
+docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp vault sh -c 'VAULT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:8200" vault operator init -key-shares=1 -key-threshold=1' | grep ':'
 
 for i in $(seq $CONSUL_CLUSTER_SIZE); do
 	printf '\n%s\n' "* Unsealing ${COMPOSE_PROJECT_NAME}_vault_$i"
 	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /tmp --index="$i" vault unseal_vault
+	sleep 2
 done
 
 printf '\n\n > Waiting for Vault cluster stabilisation ...'

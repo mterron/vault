@@ -5,7 +5,7 @@ services:
     read_only: true
     restart: always
     ulimits:
-        memlock: 9223372036854775807
+      memlock: 9223372036854775807
     volumes:
       - /data
       - /etc/consul
@@ -16,27 +16,27 @@ services:
       - /run
     env_file: _env
     environment:
-        - CONSUL_BOOTSTRAP_HOST
+      - CONSUL_BOOTSTRAP_HOST
     dns:
-        - 127.0.0.1
+      - 127.0.0.1
     dns_search:
-        - service.consul
+      - service.consul
     cap_drop:
-        - ALL
+      - ALL
     cap_add:
-        - CHOWN
-        - SETFCAP
-        - NET_BIND_SERVICE
-        - SETUID
-        - SETGID
-        - IPC_LOCK
+      - CHOWN
+      - SETFCAP
+      - NET_BIND_SERVICE
+      - SETUID
+      - SETGID
+      - IPC_LOCK
     ports:
-        - 53
-        - "53/udp"
-        - 8200
-        - 8300
-        - 8301
-        - "8301/udp"
-        - 8302
-        - "8302/udp"
-        - 8501
+      - 53
+      - "53/udp"
+      - 8200
+      - 8300
+      - 8301
+      - "8301/udp"
+      - 8302
+      - "8302/udp"
+      - 8501
