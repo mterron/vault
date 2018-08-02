@@ -11,6 +11,7 @@ services:
       - /etc/consul
       - /etc/vault
       - /etc/ssl/certs
+      - ./tls:/etc/tls
     tmpfs:
       - /tmp
       - /run

@@ -51,20 +51,12 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 COPY bin/* /usr/local/bin/
 # Copy Vault config
 COPY --chown=vault:vault config.json /etc/vault/
-# Copy Vault certificates
-COPY --chown=vault:vault tls/* /etc/tls/
 # Copy Containerpilot config
 COPY containerpilot.json5 /etc/
-# Copy client certificates
-COPY client_certificate.* /etc/tls/
 
 # Provide your own Vault config file and certificates
 ONBUILD COPY --chown=vault:vault config.json /etc/vault/
 ONBUILD COPY --chown=consul:consul consul.json /etc/consul/
-ONBUILD COPY tls/* /etc/tls/
-ONBUILD COPY client_certificate.* /etc/tls/
-# Fix permissions & add custom certs to the system certicate store
-ONBUILD RUN cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt
 
 EXPOSE 8200
 
