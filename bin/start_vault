@@ -5,13 +5,6 @@ logd() {
 	fi
 }
 
-
-# Add the Consul CA to the trusted list
-if [ ! -e /etc/ssl/certs/ca-consul.done ] && [ -e /etc/tls/ca.pem ]; then
-	cat /etc/tls/ca.pem >> /etc/ssl/certs/ca-certificates.crt &&\
-	touch /etc/ssl/certs/ca-consul.done
-fi
-
 # Acquire Consul master token
 logd "Waiting for Consul token"
 until [ -e /tmp/CT ]; do
