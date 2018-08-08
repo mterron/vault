@@ -13,6 +13,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version=$VAULT_VERSION \
       org.label-schema.description="Vault secure production ready Docker image"
 
+USER root
 WORKDIR /tmp
 RUN	apk -q --no-cache add binutils ca-certificates gnupg wget &&\
 # Download Vault binary & integrity file
