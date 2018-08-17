@@ -12,7 +12,7 @@ services:
       - /etc/vault
       - /etc/ssl/certs
       - ${PWD}/tls:/etc/tls
-      - ${PWD}/config.json/template:/etc/vault/config.json.template
+      - ${PWD}/config.json.template:/etc/vault/config.json.template
       - ${PWD}/consul.json.template:/etc/consul/consul.json.template
     tmpfs:
       - /tmp
