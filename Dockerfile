@@ -29,7 +29,7 @@ RUN	apk -q --no-cache add binutils ca-certificates gnupg wget libcap &&\
 	strip --strip-debug /usr/local/bin/vault &&\
 	setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault &&\
 # Create Vault user & group and add root to the vault group
-	adduser -u 1000001 -g 'Vault user' -s /dev/null -D vault &&\
+	adduser -u 100001 -g 'Vault user' -s /dev/null -D vault &&\
 	addgroup vault consul &&\
 # Cleanup
 	apk -q --no-cache del --purge binutils ca-certificates gnupg wget libcap &&\
