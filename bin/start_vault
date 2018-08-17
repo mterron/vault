@@ -16,7 +16,6 @@ logd "Running as $USER:$GROUP"
 if [ -e ${TEMPLATE_DIR:=/etc/vault}/config.json.template ]; then
 	cp ${TEMPLATE_DIR}/config.json.template /etc/vault/config.json
 	chmod 660 /etc/vault/config.json
-	chown vault:consul /etc/vault/config.json
 fi
 
 if [ ! -r /etc/vault/config.json ] || [ ! -w /etc/vault/config.json ]; then
@@ -100,6 +99,7 @@ unset CONSUL_ENVIRONMENT
 
 # Fix file permissions
 su-exec consul: chmod 775 /data
+chown vault:consul /etc/vault/config.json
 
 # Apply process privileges
 if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then # Joyent Triton (Illumos)
