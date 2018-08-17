@@ -6,7 +6,8 @@ ARG	VCS_REF
 ARG	HASHICORP_PGP_KEY=51852D87348FFC4C
 ARG	VAULT_VERSION=0.10.4
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
+LABEL maintainer="Miguel Terron <miguel.a.terron@gmail.com>" \
+	  org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/mterron/vault.git" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.schema-version="1.0.0-rc.1" \
@@ -15,9 +16,9 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 
 USER root
 WORKDIR /tmp
-RUN	apk -q --no-cache add binutils ca-certificates gnupg wget &&\
+RUN	apk -q --no-cache add binutils ca-certificates gnupg wget libcap &&\
 # Download Vault binary & integrity file
-	gpg --keyserver ha.pool.sks-keyservers.net --receive-keys "$HASHICORP_PGP_KEY" &&\
+	gpg --keyserver hkps://hkps.pool.sks-keyservers.net:443 --receive-keys "$HASHICORP_PGP_KEY" &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS &&\
 	wget -nv --progress=bar:force --show-progress https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig &&\
@@ -28,11 +29,10 @@ RUN	apk -q --no-cache add binutils ca-certificates gnupg wget &&\
 	strip --strip-debug /usr/local/bin/vault &&\
 	setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault &&\
 # Create Vault user & group and add root to the vault group
-	addgroup -S vault &&\
-	adduser -H -h /tmp -D -S -G vault -g 'Vault user' -s /dev/null -D vault &&\
+	adduser -u 1000001 -g 'Vault user' -s /dev/null -D vault &&\
 	addgroup vault consul &&\
 # Cleanup
-	apk -q --no-cache del --purge binutils ca-certificates gnupg wget &&\
+	apk -q --no-cache del --purge binutils ca-certificates gnupg wget libcap &&\
 	rm -rf vault_${VAULT_VERSION}_* /root/.gnupg
 
 # Add Containerpilot
@@ -50,14 +50,8 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 
 # Copy scripts
 COPY bin/* /usr/local/bin/
-# Copy Vault config
-COPY --chown=vault:vault config.json /etc/vault/
 # Copy Containerpilot config
 COPY containerpilot.json5 /etc/
-
-# Provide your own Vault config file and certificates
-ONBUILD COPY --chown=vault:vault config.json /etc/vault/
-ONBUILD COPY --chown=consul:consul consul.json /etc/consul/
 
 EXPOSE 8200
 

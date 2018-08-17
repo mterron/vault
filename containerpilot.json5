@@ -8,7 +8,7 @@
 	jobs: [
 		{
 			name: "consul",
-			exec: "/usr/local/bin/start_consul",
+			exec: "su-exec consul:consul /usr/local/bin/start_consul",
 			restarts: "unlimited",
 			health: {
 				exec: "consul-healthcheck",

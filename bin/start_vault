@@ -1,9 +1,28 @@
 #!/bin/sh
 logd() {
 	if [ ${DEBUG:-} ]; then
-		printf "[DEBUG] %s\n" "$@"
+		printf "[DEBUG] ${SCRIPT_NAME}: %s\n" "$@"
 	fi
 }
+loge() {
+    printf "[ERR] ${SCRIPT_NAME}: %s\n" "$@" >&2
+}
+###################################################################################################
+
+USER=$(id -u)
+GROUP=$(id -g)
+logd "Running as $USER:$GROUP"
+
+if [ -e ${TEMPLATE_DIR:=/etc/vault}/config.json.template ]; then
+	cp ${TEMPLATE_DIR}/config.json.template /etc/vault/config.json
+	chmod 660 /etc/vault/config.json
+	chown $USER:$GROUP /etc/vault/config.json
+fi
+
+if [ ! -r /etc/vault/config.json ] || [ ! -w /etc/vault/config.json ]; then
+	loge "[ERR] Can't access Consul configuration file! (/etc/vault/config.json)"
+	exit 1
+fi
 
 # Acquire Consul master token
 logd "Waiting for Consul token"
@@ -59,7 +78,7 @@ if [ -z "$VAULT_CONSUL_TOKEN" ]; then
 fi
 
 
-# Set Consul token & Datacenter in the config file
+# Set Consul token & datacenter in the config file
 su-exec vault sh -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
 
 # Vault redirect address

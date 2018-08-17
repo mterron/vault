@@ -11,7 +11,9 @@ services:
       - /etc/consul
       - /etc/vault
       - /etc/ssl/certs
-      - ./tls:/etc/tls
+      - ${PWD}/tls:/etc/tls
+      - ${PWD}/config.json/template:/etc/vault/config.json.template
+      - ${PWD}/consul.json.template:/etc/consul/consul.json.template
     tmpfs:
       - /tmp
       - /run
@@ -26,7 +28,6 @@ services:
       - ALL
     cap_add:
       - CHOWN
-      - SETFCAP
       - NET_BIND_SERVICE
       - SETUID
       - SETGID
