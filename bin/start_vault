@@ -16,6 +16,7 @@ logd "Running as $USER:$GROUP"
 if [ -e ${TEMPLATE_DIR:=/etc/vault}/config.json.template ]; then
 	cp ${TEMPLATE_DIR}/config.json.template /etc/vault/config.json
 	chmod 660 /etc/vault/config.json
+	chown vault /etc/vault/config.json
 fi
 
 if [ ! -r /etc/vault/config.json ] || [ ! -w /etc/vault/config.json ]; then
@@ -23,11 +24,6 @@ if [ ! -r /etc/vault/config.json ] || [ ! -w /etc/vault/config.json ]; then
 	exit 1
 fi
 
-# Acquire Consul master token
-logd "Waiting for Consul token"
-until [ -e /tmp/CT ]; do
-	sleep 1
-done
 logd "Consul token found!"
 export CONSUL_HTTP_TOKEN=$(cat /tmp/CT)
 shred -fuz /tmp/CT
@@ -35,15 +31,11 @@ fstrim /
 
 set -e
 
-# Allow service & node discovery without a token
-logd "Setting anonymous ACL for service discovery"
-su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data '{"ID": "anonymous",  "Type": "client",  "Rules": "node \"\" { policy = \"read\" } service \"\" { policy = \"read\" }"}' -XPUT http://consul/v1/acl/update >/dev/null
-
 # Get Vault service name from the environment or config file. If both are empty
 # it will default to "vault" as per https://www.vaultproject.io/docs/config/index.html#service
 if [ -z "$VAULT_SERVICE_NAME" ]; then
-	if [ "$(su-exec vault jq -cr '.storage.consul.service' /etc/vault/config.json)" != 'null' ]; then
-		VAULT_SERVICE_NAME="$(su-exec vault jq -cr '.storage.consul.service' /etc/vault/config.json)}"
+	if [ "$(jq -cr '.storage.consul.service' /etc/vault/config.json)" != 'null' ]; then
+		VAULT_SERVICE_NAME="$(jq -cr '.storage.consul.service' /etc/vault/config.json)}"
 	else
 		VAULT_SERVICE_NAME=vault
 	fi
@@ -53,11 +45,11 @@ fi
 export VAULT_SERVICE_NAME
 
 # Get Vault storage path in Consul KV
-export VAULT_PATH=$(su-exec vault jq -cr '.storage.consul.path' /etc/vault/config.json)
+export VAULT_PATH=$(jq -cr '.storage.consul.path' /etc/vault/config.json)
 
 # Remove old Vault service registrations
-if [ "${SERVICEID:-$(su-exec consul curl -s --unix-socket /data/consul.http.sock http://consul/v1/agent/services | jq -cr '.[].ID|select(. == "consul"|not)|select(.|contains(env.HOSTNAME)|not)')}" ]; then
-	su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" -XPUT http://consul/v1/agent/service/deregister/"$SERVICEID" >/dev/null
+if [ "${SERVICEID:-$(curl -s --unix-socket /data/consul.http.sock http://consul/v1/agent/services | jq -cr '.[].ID|select(. == "consul"|not)|select(.|contains(env.HOSTNAME)|not)')}" ]; then
+	curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" -XPUT http://consul/v1/agent/service/deregister/"$SERVICEID" >/dev/null
 fi
 
 # If VAULT_CONSUL_TOKEN environment variable is not set and there's no token on
@@ -66,19 +58,19 @@ fi
 # associated with that ACL. Else use the environment variable if it exists or
 # the existing token (from the config file)
 if [ -z "$VAULT_CONSUL_TOKEN" ]; then
-	if [ "$(su-exec vault jq -cr '.storage.consul.token' /etc/vault/config.json)" == 'null' ]; then
+	if [ "$(jq -cr '.storage.consul.token' /etc/vault/config.json)" == 'null' ]; then
 # TODO
 #		logd 'Acquiring a Consul token for Vault'
 #		export VAULT_CONSUL_TOKEN=$(su-exec consul curl -sS --unix-socket /data/consul.http.sock --header "X-Consul-Token: $CONSUL_HTTP_TOKEN" --data @/etc/consul/vault.policy -XPUT http://consul/v1/acl/create | jq -cre '.Token')
 		export VAULT_CONSUL_TOKEN=$CONSUL_HTTP_TOKEN
 	else
-		export VAULT_CONSUL_TOKEN=$(su-exec vault jq -cr '.storage.consul.token' /etc/vault/config.json)
+		export VAULT_CONSUL_TOKEN=$(jq -cr '.storage.consul.token' /etc/vault/config.json)
 	fi
 fi
 
 
 # Set Consul token & datacenter in the config file
-su-exec vault sh -c "{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json"
+{ rm /etc/vault/config.json; jq '.storage.consul.service = env.VAULT_SERVICE_NAME | .storage.consul.token = env.VAULT_CONSUL_TOKEN | .storage.consul.datacenter = env.CONSUL_DC_NAME' > /etc/vault/config.json; } < /etc/vault/config.json
 
 # Vault redirect address
 export VAULT_REDIRECT_ADDR="https://${HOSTNAME}.node.${CONSUL_DOMAIN:-consul}:${VAULT_PORT:-8200}"
@@ -97,13 +89,9 @@ unset CONSUL_BOOTSTRAP_HOST
 unset CONSUL_ACL_DC
 unset CONSUL_ENVIRONMENT
 
-# Fix file permissions
-su-exec consul: chmod 775 /data
-chown vault:consul /etc/vault/config.json
-
 # Apply process privileges
 if [ "$(uname -v)" = 'BrandZ virtual linux' ]; then # Joyent Triton (Illumos)
 	# Assign a privilege spec to the process that allows it to lock memory
 	/native/usr/bin/ppriv -s LI+PROC_LOCK_MEMORY $$
 fi
-exec su-exec vault:consul vault server -config=/etc/vault/config.json -log-level=warn
+exec vault server -config=/etc/vault/config.json -log-level=warn

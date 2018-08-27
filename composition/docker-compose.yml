@@ -17,6 +17,7 @@ services:
     tmpfs:
       - /tmp
       - /run
+      - /home/vault
     env_file: _env
     environment:
       - CONSUL_BOOTSTRAP_HOST

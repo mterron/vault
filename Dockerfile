@@ -41,8 +41,10 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	apk -q --no-cache add binutils &&\
 	curl -sSL "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" | tar xzf - -C /usr/local/bin &&\
 	strip --strip-debug /usr/local/bin/containerpilot &&\
-	echo -e "#!/bin/sh\ncurl -kisSfi1 --head https://127.0.0.1:8200/v1/sys/health?standbycode=204 >/dev/null" > /usr/local/bin/vault-healthcheck &&\
-	echo -e "#!/bin/sh\nsu-exec consul curl -s --unix-socket /data/consul.http.sock http://consul/v1/status/leader|jq -cre 'if . != \"\" then true else false end'>/dev/null ||exit 1"> /usr/local/bin/consul-healthcheck &&\
+	# Vault health check
+	echo -e '#!/bin/sh\nif curl -kisSfi1 --head https://127.0.0.1:8200/v1/sys/health?standbycode=204 &>/dev/null; then\n\texit 0\nelse\n\texit 1\nfi' > /usr/local/bin/vault-healthcheck &&\
+	# Consul health check
+	echo -e "#!/bin/sh\nsu-exec consul curl -s --unix-socket /data/consul.http.sock http://consul/v1/status/leader | jq -cre 'if . != \"\" then true else false end'>/dev/null || exit 1"> /usr/local/bin/consul-healthcheck &&\
 	chown root:root /usr/local/bin/containerpilot /usr/local/bin/*-healthcheck &&\
 	chmod +x /usr/local/bin/containerpilot /usr/local/bin/*-healthcheck &&\
 	apk -q --no-cache del --purge binutils &&\

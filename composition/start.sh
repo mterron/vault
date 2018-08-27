@@ -95,7 +95,7 @@ done
 printf '\e[1;32m  ✔\e[0m\n'
 printf '* Exporting Consul token'
 for i in $(seq $CONSUL_CLUSTER_SIZE); do
-	docker-compose -p "$COMPOSE_PROJECT_NAME" exec -w /data -e CONSUL_TOKEN="$CONSUL_TOKEN" --index=$i vault sh -c 'printf ${CONSUL_TOKEN}>/tmp/CT&&chmod 600 /tmp/CT'
+	docker-compose -p "$COMPOSE_PROJECT_NAME" exec --user vault -w /data -e CONSUL_TOKEN="$CONSUL_TOKEN" --index=$i vault sh -c 'printf ${CONSUL_TOKEN}>/tmp/CT&&chmod 600 /tmp/CT'
 done
 printf '\e[1;32m  ✔\e[0m\n\n'
 
@@ -138,7 +138,7 @@ printf '\e[0;32m done\e[0m\n'
 printf '\n\nLogin to your new Vault cluster\n'
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault login
 printf '\n* Enabling Vault audit to file\n'
-docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault audit enable file file_path=/data/vault_audit.log
+docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault audit enable file file_path=/home/vault/vault_audit.log
 printf '\n* Mount Transit secret backend\n'
 docker-compose -p "$COMPOSE_PROJECT_NAME" exec -u vault --index=1 vault vault secrets enable transit
 printf '\n* Cleaning up\n'

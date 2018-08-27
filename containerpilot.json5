@@ -7,6 +7,11 @@
 	},
 	jobs: [
 		{
+			name: "trust-ca",
+			exec: "trust-ca.sh",
+			restarts: "never"
+		},
+		{
 			name: "consul",
 			exec: "su-exec consul:consul /usr/local/bin/start_consul",
 			restarts: "unlimited",
@@ -18,12 +23,35 @@
 			}
 		},
 		{
-			name: "vault",
-			exec: "/usr/local/bin/start_vault",
-			restarts: "never",
+			name: "consul_acl_config",
+			exec: "su-exec vault consul_acl_config.sh",
 			when: {
 				source: "consul",
 				once: "healthy"
+			},
+		},
+		{
+			name: "fix_vault_dir",
+			exec: "chown vault: /home/vault /etc/vault",
+			restarts: "never",
+			when: {
+				source: "consul_acl_config",
+				once: "exitSuccess"
+			},
+		},
+		{
+			name: "vault",
+			exec: "su-exec vault:consul /usr/local/bin/start_vault",
+			restarts: "never",
+			health: {
+				exec: "vault-healthcheck",
+				interval: 20,
+				ttl: 60,
+				timeout: "5s"
+			},
+			when: {
+				source: "fix_vault_dir",
+				once: "exitSuccess"
 			},
 		}
 	]
