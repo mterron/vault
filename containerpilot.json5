@@ -7,8 +7,8 @@
 	},
 	jobs: [
 		{
-			name: "trust-ca",
-			exec: "trust-ca.sh",
+			name: "prestart",
+			exec: "prestart.sh",
 			restarts: "never"
 		},
 		{
@@ -20,7 +20,11 @@
 				interval: 20,
 				ttl: 60,
 				timeout: "5s"
-			}
+			},
+			when: {
+				source: "prestart",
+				once: "exitSuccess"
+			},
 		},
 		{
 			name: "consul_acl_config",
@@ -32,7 +36,7 @@
 		},
 		{
 			name: "fix_vault_dir",
-			exec: "chown vault: /home/vault /etc/vault",
+			exec: "fix_vault_permissions.sh",
 			restarts: "never",
 			when: {
 				source: "consul_acl_config",
