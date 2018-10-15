@@ -15,9 +15,9 @@ services:
       - ${PWD}/config.json.template:/etc/vault/config.json.template
       - ${PWD}/consul.json.template:/etc/consul/consul.json.template
     tmpfs:
-      - /tmp
-      - /run
-      - /home/vault
+      - /tmp:noexec,mode=777
+      - /run/consul:mode=770,size=1k,uid=100000,gid=100000
+      - /home/vault:mode=700,uid=100001,gid=100001
     env_file: _env
     environment:
       - CONSUL_BOOTSTRAP_HOST
