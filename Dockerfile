@@ -4,7 +4,7 @@ MAINTAINER Miguel Terron <miguel.a.terron@gmail.com>
 ARG BUILD_DATE
 ARG	VCS_REF
 ARG	HASHICORP_PGP_KEY=51852D87348FFC4C
-ARG	VAULT_VERSION=1.0.0
+ARG	VAULT_VERSION=1.0.1
 
 LABEL maintainer="Miguel Terron <miguel.a.terron@gmail.com>" \
 	  org.label-schema.build-date=$BUILD_DATE \
